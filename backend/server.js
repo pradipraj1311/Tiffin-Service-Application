@@ -3,6 +3,7 @@ const cors = require("cors");
 const dotenv = require("dotenv");
 const connectDB = require("./confing/db");
 const authRoutes = require('./routes/authRoutes');
+const tiffinRoutes = require('./routes/tiffinRoutes'); 
 
 dotenv.config();
 
@@ -12,6 +13,7 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use('/api/auth', authRoutes);
+app.use('/api/tiffins', tiffinRoutes); 
 
 app.get("/api/test", (req, res) => {
   res.status(200).json({ message: "Tiffin Service API is running perfectly!" });
