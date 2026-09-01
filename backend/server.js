@@ -5,7 +5,7 @@ const connectDB = require("./config/db");
 const authRoutes = require("./routes/authRoutes");
 const tiffinRoutes = require("./routes/tiffinRoutes");
 const orderRoutes = require("./routes/orderRoutes");
-
+const paymentRoutes = require("./routes/paymentRoutes");
 dotenv.config();
 
 const app = express();
@@ -16,6 +16,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use("/api/auth", authRoutes);
 app.use("/api/tiffins", tiffinRoutes);
 app.use("/api/orders", orderRoutes);
+app.use("/api/payments", paymentRoutes);
 
 app.get("/api/test", (req, res) => {
   res.status(200).json({ message: "Tiffin Service API is running perfectly!" });
