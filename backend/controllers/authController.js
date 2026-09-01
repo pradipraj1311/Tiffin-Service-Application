@@ -47,7 +47,6 @@ exports.registerUser = async (req, res) => {
   }
 };
 
-// @route   /api/auth/login
 exports.loginUser = async (req, res) => {
   try {
     const { email, password } = req.body;
