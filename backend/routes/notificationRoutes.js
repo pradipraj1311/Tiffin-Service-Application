@@ -4,7 +4,7 @@ const { createNotification, getNotifications } = require('../controllers/notific
 const { protect } = require('../middleware/authMiddleware');
 
 router.route('/')
-  .post(protect, createNotification)
-  .get(protect, getNotifications);
+    .post(protect, createNotification)
+    .get(protect, getNotifications);
 
 module.exports = router;
