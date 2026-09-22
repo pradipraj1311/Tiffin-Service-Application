@@ -7,6 +7,7 @@ export default function Dashboard() {
   const [tiffins, setTiffins] = useState([]);
   const [loading, setLoading] = useState(true);
   
+  // Chef Form State
   const [newMenu, setNewMenu] = useState({ MealTypes: 'Lunch', veg: true, MealNames: '' });
 
   useEffect(() => {
@@ -33,7 +34,7 @@ export default function Dashboard() {
       };
       await createTiffin(payload);
       alert('Menu created successfully!');
-      fetchTiffins(); 
+      fetchTiffins(); // Refresh the list
     } catch (error) {
       alert(error.response?.data?.message || 'Failed to create menu');
     }
@@ -45,6 +46,7 @@ export default function Dashboard() {
     <div>
       <h2>Welcome to your Dashboard, {user.name}</h2>
       
+      {/* CHEF VIEW: Form to add a new tiffin */}
       {user.role === 'Chef' && (
         <div style={{ background: '#f4f4f4', padding: '20px', marginBottom: '20px', borderRadius: '8px' }}>
           <h3>Post a New Menu</h3>
@@ -70,6 +72,7 @@ export default function Dashboard() {
         </div>
       )}
 
+      {/* CUSTOMER & CHEF VIEW: List of available tiffins */}
       <h3>Available Tiffins</h3>
       <div style={{ display: 'flex', gap: '15px', flexWrap: 'wrap' }}>
         {tiffins.length === 0 ? <p>No tiffins available right now.</p> : tiffins.map((tiffin) => (
@@ -85,13 +88,6 @@ export default function Dashboard() {
           </div>
         ))}
       </div>
-    </div>
-  );
-}
-export default function Dashboard() {
-  return (
-    <div>
-      <h2>User Dashboard</h2>
     </div>
   );
 }
