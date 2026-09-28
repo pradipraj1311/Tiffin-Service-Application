@@ -7,6 +7,7 @@ import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
 import ProtectedRoute from './components/ProtectedRoute';
 import MyOrders from './pages/MyOrders';
+import Subscriptions from './pages/Subscriptions';
 
 function App() {
   return (
@@ -23,6 +24,11 @@ function App() {
                 <Dashboard />
               </ProtectedRoute>
             } />
+            <Route path="/subscriptions" element={
+  <ProtectedRoute allowedRoles={['Chef']}>
+    <Subscriptions />
+  </ProtectedRoute>
+} />
             <Route path="/my-orders" element={
   <ProtectedRoute allowedRoles={['Customer']}>
     <MyOrders />
