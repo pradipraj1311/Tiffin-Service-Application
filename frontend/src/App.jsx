@@ -14,6 +14,7 @@ function App() {
     <Router>
       <AuthProvider>
         <Navbar />
+        <div div className="container">
         <div style={{ padding: "20px" }}>
           <Routes>
             <Route path="/" element={<Home />} />
