@@ -1,15 +1,17 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
-const { getTiffins, getTiffinById, createTiffin } = require('../controllers/tiffinController');
-const { protect, authorize } = require('../middleware/authMiddleware');
+const {
+  getTiffins,
+  getTiffinById,
+  createTiffin,
+} = require("../controllers/tiffinController");
+const { protect, authorize } = require("../middleware/authMiddleware");
 
-//  /api/tiffins
-router.route('/')
+router
+  .route("/")
   .get(getTiffins)
-  .post(protect, authorize('Chef', 'Admin'), createTiffin);
+  .post(protect, authorize("Chef", "Admin"), createTiffin);
 
-// /api/tiffins/:id
-router.route('/:id')
-  .get(getTiffinById);
+router.route("/:id").get(getTiffinById);
 
 module.exports = router;
