@@ -8,7 +8,7 @@ export default function Dashboard() {
   const { user } = useContext(AuthContext);
   const [tiffins, setTiffins] = useState([]);
   const [loading, setLoading] = useState(true);
-  
+
   const [newMenu, setNewMenu] = useState({ MealTypes: 'Lunch', veg: true, MealNames: '' });
 
   useEffect(() => {
@@ -35,7 +35,7 @@ export default function Dashboard() {
       };
       await createTiffin(payload);
       alert('Menu created successfully!');
-      fetchTiffins(); 
+      fetchTiffins();
     } catch (error) {
       alert(error.response?.data?.message || 'Failed to create menu');
     }
@@ -54,25 +54,25 @@ export default function Dashboard() {
   return (
     <div>
       <h2>Welcome to your Dashboard, {user.name}</h2>
-      
+
       {user.role === 'Chef' && (
         <div style={{ background: '#f4f4f4', padding: '20px', marginBottom: '20px', borderRadius: '8px' }}>
           <h3>Post a New Menu</h3>
           <form onSubmit={handleCreateMenu} style={{ display: 'flex', flexDirection: 'column', gap: '10px', maxWidth: '400px' }}>
-            <select value={newMenu.MealTypes} onChange={(e) => setNewMenu({...newMenu, MealTypes: e.target.value})}>
+            <select value={newMenu.MealTypes} onChange={(e) => setNewMenu({ ...newMenu, MealTypes: e.target.value })}>
               <option value="Breakfast">Breakfast</option>
               <option value="Lunch">Lunch</option>
               <option value="Dinner">Dinner</option>
             </select>
-            <select value={newMenu.veg} onChange={(e) => setNewMenu({...newMenu, veg: e.target.value === 'true'})}>
+            <select value={newMenu.veg} onChange={(e) => setNewMenu({ ...newMenu, veg: e.target.value === 'true' })}>
               <option value="true">Vegetarian</option>
               <option value="false">Non-Vegetarian</option>
             </select>
-            <input 
-              type="text" 
-              placeholder="Items (comma separated, e.g., Roti, Dal, Rice)" 
+            <input
+              type="text"
+              placeholder="Items (comma separated, e.g., Roti, Dal, Rice)"
               value={newMenu.MealNames}
-              onChange={(e) => setNewMenu({...newMenu, MealNames: e.target.value})}
+              onChange={(e) => setNewMenu({ ...newMenu, MealNames: e.target.value })}
               required
             />
             <button type="submit">Publish Menu</button>
@@ -81,9 +81,9 @@ export default function Dashboard() {
       )}
 
       <h3>Available Tiffins</h3>
-      <div style={{ display: 'flex', gap: '15px', flexWrap: 'wrap' }}>
+      <div div className="card-grid">
         {tiffins.length === 0 ? <p>No tiffins available right now.</p> : tiffins.map((tiffin) => (
-          <div key={tiffin._id} style={{ border: '1px solid #ccc', padding: '15px', borderRadius: '8px', minWidth: '200px' }}>
+          <div key={tiffin._id} className="card">
             <p><strong>Type:</strong> {tiffin.MealTypes.join(', ')}</p>
             {tiffin.MenuList.map((menu, index) => (
               <div key={index}>
@@ -91,11 +91,11 @@ export default function Dashboard() {
                 <p>{menu.MealNames.join(', ')}</p>
               </div>
             ))}
-{user.role === 'Customer' && (
-  <button onClick={() => handleOrder(tiffin._id)} style={{ marginTop: '10px' }}>
-    Order Now
-  </button>
-)}          </div>
+            {user.role === 'Customer' && (
+              <button onClick={() => handleOrder(tiffin._id)} style={{ marginTop: '10px' }}>
+                Order Now
+              </button>
+            )}          </div>
         ))}
       </div>
     </div>
