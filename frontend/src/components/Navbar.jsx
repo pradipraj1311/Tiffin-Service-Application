@@ -13,6 +13,7 @@ export default function Navbar() {
         <>
           <Link to="/dashboard">Dashboard</Link>
           {user.role === 'Customer' && <Link to="/my-orders">My Orders</Link>}
+          {user.role === 'Chef' && <Link to="/subscriptions">Subscriptions</Link>}
           <span style={{ marginLeft: 'auto', fontWeight: 'bold' }}>Welcome, {user.name} ({user.role})</span>
           <button onClick={logout} style={{ cursor: 'pointer' }}>Logout</button>
         </>
