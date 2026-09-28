@@ -1,13 +1,14 @@
 import { useContext, useEffect, useState } from 'react';
 import { AuthContext } from '../context/AuthContext';
 import { getAllTiffins, createTiffin } from '../services/tiffinService';
+import { createOrder } from '../services/orderService';
+
 
 export default function Dashboard() {
   const { user } = useContext(AuthContext);
   const [tiffins, setTiffins] = useState([]);
   const [loading, setLoading] = useState(true);
   
-  // Chef Form State
   const [newMenu, setNewMenu] = useState({ MealTypes: 'Lunch', veg: true, MealNames: '' });
 
   useEffect(() => {
@@ -34,9 +35,17 @@ export default function Dashboard() {
       };
       await createTiffin(payload);
       alert('Menu created successfully!');
-      fetchTiffins(); // Refresh the list
+      fetchTiffins(); 
     } catch (error) {
       alert(error.response?.data?.message || 'Failed to create menu');
+    }
+  };
+  const handleOrder = async (menuId) => {
+    try {
+      await createOrder({ post_MenuId: menuId, orderQuantity: 1 });
+      alert('Order placed successfully!');
+    } catch (error) {
+      alert(error.response?.data?.message || 'Failed to place order');
     }
   };
 
@@ -46,7 +55,6 @@ export default function Dashboard() {
     <div>
       <h2>Welcome to your Dashboard, {user.name}</h2>
       
-      {/* CHEF VIEW: Form to add a new tiffin */}
       {user.role === 'Chef' && (
         <div style={{ background: '#f4f4f4', padding: '20px', marginBottom: '20px', borderRadius: '8px' }}>
           <h3>Post a New Menu</h3>
@@ -72,7 +80,6 @@ export default function Dashboard() {
         </div>
       )}
 
-      {/* CUSTOMER & CHEF VIEW: List of available tiffins */}
       <h3>Available Tiffins</h3>
       <div style={{ display: 'flex', gap: '15px', flexWrap: 'wrap' }}>
         {tiffins.length === 0 ? <p>No tiffins available right now.</p> : tiffins.map((tiffin) => (
@@ -84,8 +91,11 @@ export default function Dashboard() {
                 <p>{menu.MealNames.join(', ')}</p>
               </div>
             ))}
-            {user.role === 'Customer' && <button style={{ marginTop: '10px' }}>Order Now</button>}
-          </div>
+{user.role === 'Customer' && (
+  <button onClick={() => handleOrder(tiffin._id)} style={{ marginTop: '10px' }}>
+    Order Now
+  </button>
+)}          </div>
         ))}
       </div>
     </div>

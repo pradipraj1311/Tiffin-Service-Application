@@ -6,6 +6,7 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
 import ProtectedRoute from './components/ProtectedRoute';
+import MyOrders from './pages/MyOrders';
 
 function App() {
   return (
@@ -17,12 +18,16 @@ function App() {
             <Route path="/" element={<Home />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
-            {/* Protect the dashboard route */}
             <Route path="/dashboard" element={
               <ProtectedRoute>
                 <Dashboard />
               </ProtectedRoute>
             } />
+            <Route path="/my-orders" element={
+  <ProtectedRoute allowedRoles={['Customer']}>
+    <MyOrders />
+  </ProtectedRoute>
+} />
           </Routes>
         </div>
       </AuthProvider>
