@@ -4,15 +4,12 @@ import API from '../services/api';
 import { getAllTiffins, createTiffin, updateTiffin, deleteTiffin } from '../services/tiffinService';
 import { createOrder } from '../services/orderService';
 
-
 export default function Dashboard() {
   const { user } = useContext(AuthContext);
   const [tiffins, setTiffins] = useState([]);
   const [globalFoodItems, setGlobalFoodItems] = useState([]);
   const [loading, setLoading] = useState(true);
   
-
-  const [newMenu, setNewMenu] = useState({ MealTypes: 'Lunch', veg: true, MealNames: '' });
   const today = new Date().toISOString().split('T')[0];
   
   const [menuForm, setMenuForm] = useState({ 
@@ -75,9 +72,6 @@ export default function Dashboard() {
         MealTypes: [menuForm.MealTypes],
         MenuList: [{ veg: menuForm.veg, MealNames: mealItems }]
       };
-      await createTiffin(payload);
-      alert('Menu created successfully!');
-      fetchTiffins(); 
       
       if (editingId) {
         const updatedMenu = await updateTiffin(editingId, payload);
@@ -92,7 +86,6 @@ export default function Dashboard() {
       setEditingId(null);
       setMealItems([]);
       setMenuForm({ ...menuForm, deliveryDate: today, price: 150.00 });
-      fetchTiffins();
     } catch (error) {
       alert(error.response?.data?.message || 'Action failed');
     }
@@ -169,37 +162,9 @@ export default function Dashboard() {
     }
   };
 
-      alert(error.response?.data?.message || 'Failed to place order');
-    }
-  };
-
   if (loading) return <div>Loading...</div>;
 
   return (
-    <div>
-      <h2>Welcome to your Dashboard, {user.name}</h2>
-
-      {user.role === 'Chef' && (
-        <div style={{ background: '#f4f4f4', padding: '20px', marginBottom: '20px', borderRadius: '8px' }}>
-          <h3>Post a New Menu</h3>
-          <form onSubmit={handleCreateMenu} style={{ display: 'flex', flexDirection: 'column', gap: '10px', maxWidth: '400px' }}>
-            <select value={newMenu.MealTypes} onChange={(e) => setNewMenu({ ...newMenu, MealTypes: e.target.value })}>
-              <option value="Breakfast">Breakfast</option>
-              <option value="Lunch">Lunch</option>
-              <option value="Dinner">Dinner</option>
-            </select>
-            <select value={newMenu.veg} onChange={(e) => setNewMenu({ ...newMenu, veg: e.target.value === 'true' })}>
-              <option value="true">Vegetarian</option>
-              <option value="false">Non-Vegetarian</option>
-            </select>
-            <input
-              type="text"
-              placeholder="Items (comma separated, e.g., Roti, Dal, Rice)"
-              value={newMenu.MealNames}
-              onChange={(e) => setNewMenu({ ...newMenu, MealNames: e.target.value })}
-              required
-            />
-            <button type="submit">Publish Menu</button>
     <div className="container">
       
       {user.role === 'Chef' && (
@@ -230,7 +195,7 @@ export default function Dashboard() {
               <div style={{ position: 'relative' }}>
                 <input 
                   type="text" 
-                  placeholder="Type food item " 
+                  placeholder="Type food item" 
                   value={itemInput}
                   onChange={handleItemInputChange}
                   onKeyDown={handleKeyDown}
@@ -253,11 +218,11 @@ export default function Dashboard() {
               <div style={{ position: 'relative' }}>
                 <label style={{ fontSize: '14px', display: 'block', marginBottom: '5px' }}>Price per Tiffin</label>
                 <span style={{ position: 'absolute', left: '10px', top: '35px', fontWeight: 'bold' }}>₹</span>
-                <input type="number" step="0.01" min="0" required value={menuForm.price} onChange={e => setMenuForm({...menuForm, price: e.target.value})} style={{ paddingLeft: '25px', marginBottom: 0, width: '85%' }} />
+                <input type="number" step="0.01" min="0" required value={menuForm.price} onChange={e => setMenuForm({...menuForm, price: e.target.value})} style={{ paddingLeft: '25px', marginBottom: 0, width: '100%' }} />
               </div>
               <div>
                 <label style={{ fontSize: '14px', display: 'block', marginBottom: '5px' }}>Delivery Date</label>
-                <input type="date" required value={menuForm.deliveryDate} onChange={e => setMenuForm({...menuForm, deliveryDate: e.target.value})} style={{ marginBottom: 0, width: '85%' }} />
+                <input type="date" required value={menuForm.deliveryDate} onChange={e => setMenuForm({...menuForm, deliveryDate: e.target.value})} style={{ marginBottom: 0, width: '100%' }} />
                 <small style={{ color: '#007bff', display: 'block', marginTop: '5px' }}>
                   {formatDisplayDate(menuForm.deliveryDate)}
                 </small>
@@ -286,24 +251,6 @@ export default function Dashboard() {
         </div>
       )}
 
-
-      <h3>Available Tiffins</h3>
-      <div div className="card-grid">
-        {tiffins.length === 0 ? <p>No tiffins available right now.</p> : tiffins.map((tiffin) => (
-          <div key={tiffin._id} className="card">
-            <p><strong>Type:</strong> {tiffin.MealTypes.join(', ')}</p>
-            {tiffin.MenuList.map((menu, index) => (
-              <div key={index}>
-                <p><strong>{menu.veg ? '🟢 Veg' : '🔴 Non-Veg'}</strong></p>
-                <p>{menu.MealNames.join(', ')}</p>
-              </div>
-            ))}
-            {user.role === 'Customer' && (
-              <button onClick={() => handleOrder(tiffin._id)} style={{ marginTop: '10px' }}>
-                Order Now
-              </button>
-            )}          </div>
-        ))}
       <h3>{user.role === 'Chef' ? 'Active Menus (Last 7 Days)' : 'Today\'s Tiffin Options'}</h3>
       
       <div className="card-grid">
