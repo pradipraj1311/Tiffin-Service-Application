@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 
 const menuSchema = new mongoose.Schema(
   {
-    CustomerId: { type: mongoose.Schema.Types.ObjectId, ref: 'Customer' },
+    CustomerId: { type: mongoose.Schema.Types.ObjectId, ref: 'User',required: true },
     MenuList: [
       {
         veg: { type: Boolean, required: true },
