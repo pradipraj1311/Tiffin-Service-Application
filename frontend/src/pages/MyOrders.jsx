@@ -41,10 +41,27 @@ export default function MyOrders() {
         <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
           {orders.map((order) => (
             <div key={order._id} className="card" style={{ borderLeft: '5px solid #007bff' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+              
+              {/* <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                 <p><strong>Order ID:</strong> {order._id.substring(0, 8)}...</p>
                 <p style={{ color: 'gray' }}>{new Date(order.createdAt).toLocaleDateString()}</p>
-              </div>
+              </div> */}
+
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+    <p style={{ margin: 0 }}><strong>Order ID:</strong> {order._id.substring(0, 8)}...</p>
+    <span style={{ 
+      background: order.status === 'Delivered' ? '#d4edda' : '#fff3cd', 
+      color: order.status === 'Delivered' ? '#155724' : '#856404',
+      padding: '4px 12px', 
+      borderRadius: '20px',
+      fontSize: '12px',
+      fontWeight: 'bold'
+    }}>
+      {order.status || 'Pending'}
+    </span>
+  </div>
+
+
               <p><strong>Total Price:</strong> ₹{order.orderQuantity * 150}</p>
               <p><strong>Menu:</strong> {order.post_MenuId?.MealTypes?.join(', ')}</p>
               

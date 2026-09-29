@@ -21,6 +21,7 @@ export default function Navbar() {
         <>
           <Link to="/dashboard">Dashboard</Link>
           {user.role === "Chef" && <Link to="/menu-history">Menu History</Link>}
+          {user.role === "Chef" && <Link to="/incoming-orders">Incoming Orders</Link>}
           {user.role === "Chef" && <Link to="/subscriptions">Subscriptions</Link>}
           {user.role === "Customer" && <Link to="/my-orders">My Orders</Link>}
 

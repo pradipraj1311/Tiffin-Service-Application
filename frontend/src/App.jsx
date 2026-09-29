@@ -10,6 +10,8 @@ import MyOrders from "./pages/MyOrders";
 import Subscriptions from "./pages/Subscriptions";
 import Notifications from "./pages/Notifications";
 import MenuHistory from './pages/MenuHistory';
+import ChefOrders from "./pages/ChefOrders";
+
 
 function App() {
   return (
@@ -45,6 +47,11 @@ function App() {
                 <MyOrders />
               </ProtectedRoute>
             } />
+            <Route path="/incoming-orders" element={
+  <ProtectedRoute allowedRoles={['Chef']}>
+    <ChefOrders />
+  </ProtectedRoute>
+} />
             
             <Route path="/notifications" element={
               <ProtectedRoute>
