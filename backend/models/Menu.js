@@ -14,9 +14,16 @@ const menuSchema = new mongoose.Schema(
         type: String,
         enum: ['Breakfast', 'Lunch', 'Dinner']
       }
-    ]
+    ],
+  
+  price: { type: Number, required: true, min: 0 },
+  deliveryDate: { type: Date, required: true },
+  orderCutoff: { type: String, required: true },
+  capacity: { type: Number, required: true, min: 1 },
+  soldOut: { type: Boolean, default: false },
   },
-  { timestamps: true }
-);
+  { timestamps: true },
+ );
+
 
 module.exports = mongoose.model('Menu', menuSchema);

@@ -20,11 +20,15 @@ export default function Navbar() {
       {user ? (
         <>
           <Link to="/dashboard">Dashboard</Link>
+          <span style={{ marginLeft: 'auto', fontWeight: 'bold' }}>Welcome, {user.name} ({user.role})</span>
+          <button onClick={logout} style={{ cursor: 'pointer' }}>Logout</button>
+          {user.role === 'Chef' && <Link to="/menu-history">Menu History</Link>}
           {user.role === "Customer" && <Link to="/my-orders">My Orders</Link>}
           {user.role === "Chef" && (
             <Link to="/subscriptions">Subscriptions</Link>
           )}
           <span style={{ marginLeft: "auto", fontWeight: "bold" }}>
+            {/* Welcome {user.name}  */}
             Welcome, {user.name} ({user.role})
           </span>
           <Link to="/notifications">Notifications</Link>
