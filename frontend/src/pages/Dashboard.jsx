@@ -1,12 +1,9 @@
 import { useContext, useEffect, useState } from 'react';
 import { AuthContext } from '../context/AuthContext';
-<<<<<<< Updated upstream
-import { getAllTiffins, createTiffin } from '../services/tiffinService';
-=======
 import API from '../services/api';
 import { getAllTiffins, createTiffin, updateTiffin, deleteTiffin } from '../services/tiffinService';
 import { createOrder } from '../services/orderService';
->>>>>>> Stashed changes
+
 
 export default function Dashboard() {
   const { user } = useContext(AuthContext);
@@ -14,10 +11,8 @@ export default function Dashboard() {
   const [globalFoodItems, setGlobalFoodItems] = useState([]);
   const [loading, setLoading] = useState(true);
   
-<<<<<<< Updated upstream
-  // Chef Form State
+
   const [newMenu, setNewMenu] = useState({ MealTypes: 'Lunch', veg: true, MealNames: '' });
-=======
   const today = new Date().toISOString().split('T')[0];
   
   const [menuForm, setMenuForm] = useState({ 
@@ -33,7 +28,6 @@ export default function Dashboard() {
   const [itemInput, setItemInput] = useState('');
   const [filteredSuggestions, setFilteredSuggestions] = useState([]);
   const [editingId, setEditingId] = useState(null); 
->>>>>>> Stashed changes
 
   useEffect(() => {
     fetchData();
@@ -81,11 +75,9 @@ export default function Dashboard() {
         MealTypes: [menuForm.MealTypes],
         MenuList: [{ veg: menuForm.veg, MealNames: mealItems }]
       };
-<<<<<<< Updated upstream
       await createTiffin(payload);
       alert('Menu created successfully!');
-      fetchTiffins(); // Refresh the list
-=======
+      fetchTiffins(); 
       
       if (editingId) {
         const updatedMenu = await updateTiffin(editingId, payload);
@@ -100,13 +92,11 @@ export default function Dashboard() {
       setEditingId(null);
       setMealItems([]);
       setMenuForm({ ...menuForm, deliveryDate: today, price: 150.00 });
->>>>>>> Stashed changes
+      fetchTiffins();
     } catch (error) {
       alert(error.response?.data?.message || 'Action failed');
     }
   };
-<<<<<<< Updated upstream
-=======
 
   const handleEdit = (tiffin) => {
     setEditingId(tiffin._id);
@@ -178,38 +168,38 @@ export default function Dashboard() {
       alert('Failed to place order');
     }
   };
->>>>>>> Stashed changes
+
+      alert(error.response?.data?.message || 'Failed to place order');
+    }
+  };
 
   if (loading) return <div>Loading...</div>;
 
   return (
-<<<<<<< Updated upstream
     <div>
       <h2>Welcome to your Dashboard, {user.name}</h2>
-      
-      {/* CHEF VIEW: Form to add a new tiffin */}
+
       {user.role === 'Chef' && (
         <div style={{ background: '#f4f4f4', padding: '20px', marginBottom: '20px', borderRadius: '8px' }}>
           <h3>Post a New Menu</h3>
           <form onSubmit={handleCreateMenu} style={{ display: 'flex', flexDirection: 'column', gap: '10px', maxWidth: '400px' }}>
-            <select value={newMenu.MealTypes} onChange={(e) => setNewMenu({...newMenu, MealTypes: e.target.value})}>
+            <select value={newMenu.MealTypes} onChange={(e) => setNewMenu({ ...newMenu, MealTypes: e.target.value })}>
               <option value="Breakfast">Breakfast</option>
               <option value="Lunch">Lunch</option>
               <option value="Dinner">Dinner</option>
             </select>
-            <select value={newMenu.veg} onChange={(e) => setNewMenu({...newMenu, veg: e.target.value === 'true'})}>
+            <select value={newMenu.veg} onChange={(e) => setNewMenu({ ...newMenu, veg: e.target.value === 'true' })}>
               <option value="true">Vegetarian</option>
               <option value="false">Non-Vegetarian</option>
             </select>
-            <input 
-              type="text" 
-              placeholder="Items (comma separated, e.g., Roti, Dal, Rice)" 
+            <input
+              type="text"
+              placeholder="Items (comma separated, e.g., Roti, Dal, Rice)"
               value={newMenu.MealNames}
-              onChange={(e) => setNewMenu({...newMenu, MealNames: e.target.value})}
+              onChange={(e) => setNewMenu({ ...newMenu, MealNames: e.target.value })}
               required
             />
             <button type="submit">Publish Menu</button>
-=======
     <div className="container">
       
       {user.role === 'Chef' && (
@@ -292,17 +282,15 @@ export default function Dashboard() {
                 <button type="button" onClick={() => { setEditingId(null); setMealItems([]); }} style={{ background: '#6c757d', flex: 1 }}>Cancel Edit</button>
               )}
             </div>
->>>>>>> Stashed changes
           </form>
         </div>
       )}
 
-<<<<<<< Updated upstream
-      {/* CUSTOMER & CHEF VIEW: List of available tiffins */}
+
       <h3>Available Tiffins</h3>
-      <div style={{ display: 'flex', gap: '15px', flexWrap: 'wrap' }}>
+      <div div className="card-grid">
         {tiffins.length === 0 ? <p>No tiffins available right now.</p> : tiffins.map((tiffin) => (
-          <div key={tiffin._id} style={{ border: '1px solid #ccc', padding: '15px', borderRadius: '8px', minWidth: '200px' }}>
+          <div key={tiffin._id} className="card">
             <p><strong>Type:</strong> {tiffin.MealTypes.join(', ')}</p>
             {tiffin.MenuList.map((menu, index) => (
               <div key={index}>
@@ -310,10 +298,12 @@ export default function Dashboard() {
                 <p>{menu.MealNames.join(', ')}</p>
               </div>
             ))}
-            {user.role === 'Customer' && <button style={{ marginTop: '10px' }}>Order Now</button>}
-          </div>
+            {user.role === 'Customer' && (
+              <button onClick={() => handleOrder(tiffin._id)} style={{ marginTop: '10px' }}>
+                Order Now
+              </button>
+            )}          </div>
         ))}
-=======
       <h3>{user.role === 'Chef' ? 'Active Menus (Last 7 Days)' : 'Today\'s Tiffin Options'}</h3>
       
       <div className="card-grid">
@@ -366,7 +356,6 @@ export default function Dashboard() {
             </div>
           );
         })}
->>>>>>> Stashed changes
       </div>
     </div>
   );

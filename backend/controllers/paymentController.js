@@ -3,7 +3,7 @@ const Order = require("../models/Order");
 
 exports.createPayment = async (req, res) => {
   try {
-    const { order_Id, payment_type } = req.body;
+    const { order_Id, payment_type, payment_status } = req.body;
 
     const orderExists = await Order.findById(order_Id);
     if (!orderExists) {
@@ -13,7 +13,7 @@ exports.createPayment = async (req, res) => {
     const payment = await Payment.create({
       order_Id,
       payment_type,
-      Payment_Status: true, // Simulating a successful payment
+      Payment_Status: payment_status || false,
     });
 
     res.status(201).json(payment);

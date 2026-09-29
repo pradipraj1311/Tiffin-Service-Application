@@ -13,7 +13,6 @@ router.route("/").post(protect, createPayment);
 router.route("/:id").get(protect, getPaymentById);
 
 router.route("/:id/status").get(protect, getPaymentStatus);
-
 router.route("/:id/refund").post(protect, refundPayment);
 
 module.exports = router;
