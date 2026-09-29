@@ -14,7 +14,11 @@ const userSchema = new mongoose.Schema(
     address: {
       Street: { type: String },
       City: { type: String }
-    }
+    },
+    businessName: { type: String }, 
+  lat: { type: Number },         
+  lng: { type: Number },          
+  deliveryRadius: { type: Number }
   },
   { timestamps: true }
 );

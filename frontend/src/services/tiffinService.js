@@ -1,7 +1,7 @@
 import API from './api';
 
-export const getAllTiffins = async () => {
-  const response = await API.get('/tiffins');
+export const getAllTiffins = async (params={}) => {
+  const response = await API.get('/tiffins', { params });
   return response.data;
 };
 
