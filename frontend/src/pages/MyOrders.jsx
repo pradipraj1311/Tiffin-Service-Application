@@ -14,14 +14,8 @@ export default function MyOrders() {
   const fetchOrders = async () => {
     try {
       const data = await getUserOrders();
-<<<<<<< Updated upstream
-      setOrders(data);
-=======
-      const sortedData = data.sort(
-        (a, b) => new Date(b.createdAt) - new Date(a.createdAt),
-      );
+      const sortedData = data.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
       setOrders(sortedData);
->>>>>>> Stashed changes
     } catch (error) {
       console.error("Error fetching orders", error);
     } finally {
@@ -72,22 +66,6 @@ export default function MyOrders() {
   if (loading) return <div className="container">Loading your orders...</div>;
 
   return (
-<<<<<<< Updated upstream
-    <div>
-      <h2>My Orders</h2>
-      {orders.length === 0 ? <p>You have no orders yet.</p> : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-          {orders.map((order) => (
-            <div key={order._id} style={{ border: '1px solid #ccc', padding: '15px', borderRadius: '8px' }}>
-              <p><strong>Order ID:</strong> {order._id}</p>
-              <p><strong>Quantity:</strong> {order.orderQuantity}</p>
-              <p><strong>Menu:</strong> {order.post_MenuId?.MealTypes?.join(', ')}</p>
-              <button onClick={() => handleCancel(order._id)} style={{ background: 'red', color: 'white' }}>
-                Cancel Order
-              </button>
-            </div>
-          ))}
-=======
     <div className="container" style={{ maxWidth: "900px" }}>
       <div
         style={{
@@ -170,7 +148,6 @@ export default function MyOrders() {
                   background: "white",
                 }}
               >
-                {/* AMAZON-STYLE HEADER */}
                 <div
                   style={{
                     background: "#f0f2f2",
@@ -229,19 +206,9 @@ export default function MyOrders() {
                     >
                       Order # {order._id.substring(0, 10).toUpperCase()}
                     </span>
-                    <span
-                      style={{
-                        fontSize: "13px",
-                        color: "#007185",
-                        cursor: "pointer",
-                      }}
-                    >
-                      View order details
-                    </span>
                   </div>
                 </div>
 
-                {/* BODY CONTENT */}
                 <div
                   style={{
                     padding: "20px",
@@ -251,7 +218,6 @@ export default function MyOrders() {
                     gap: "20px",
                   }}
                 >
-                  {/* Left Side: Order Info */}
                   <div style={{ flex: "2", minWidth: "250px" }}>
                     <h3 style={{ margin: "0 0 10px 0", fontSize: "20px" }}>
                       {menu?.MealTypes?.join(", ") || "Tiffin Meal"}
@@ -284,7 +250,6 @@ export default function MyOrders() {
                     </div>
                   </div>
 
-                  {/* Right Side: Action Buttons & OTP */}
                   <div
                     style={{
                       flex: "1",
@@ -351,7 +316,6 @@ export default function MyOrders() {
               </div>
             );
           })}
->>>>>>> Stashed changes
         </div>
       )}
     </div>

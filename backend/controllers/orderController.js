@@ -1,11 +1,11 @@
 const Order = require("../models/Order");
 const Customer = require("../models/Customer");
+const Menu = require("../models/Menu");
 
 exports.createOrder = async (req, res) => {
   try {
     const { post_MenuId, orderQuantity } = req.body;
 
-    // Find the Customer profile linked to the logged-in User
     const customer = await Customer.findOne({ userId: req.user._id });
     if (!customer) {
       return res.status(404).json({
@@ -69,9 +69,38 @@ exports.cancelOrder = async (req, res) => {
   } catch (error) {
     res.status(500).json({ message: "Server Error", error: error.message });
   }
+
 };
-<<<<<<< Updated upstream
-=======
+
+exports.getChefOrders = async (req, res) => {
+  try {
+    const chefMenus = await Menu.find({ CustomerId: req.user._id }).select('_id');
+    const menuIds = chefMenus.map(menu => menu._id);
+
+    const orders = await Order.find({ post_MenuId: { $in: menuIds } })
+      .populate('CustomerId', 'name PhoneNumber address') 
+      .populate('post_MenuId', 'MealTypes price')
+      .sort({ createdAt: -1 });
+
+    res.status(200).json(orders);
+  } catch (error) {
+    res.status(500).json({ message: 'Server Error', error: error.message });
+  }
+};
+exports.updateOrderStatus = async (req, res) => {
+  try {
+    const { status } = req.body;
+    const order = await Order.findByIdAndUpdate(
+      req.params.id, 
+      { status }, 
+      { new: true }
+    );
+    if (!order) return res.status(404).json({ message: 'Order not found' });
+    res.status(200).json(order);
+  } catch (error) {
+    res.status(500).json({ message: 'Server Error', error: error.message });
+  }
+};
 
 //  Generate OTP during creation
 exports.createOrder = async (req, res) => {
@@ -145,4 +174,4 @@ exports.updateOrderStatus = async (req, res) => {
     res.status(500).json({ message: "Server Error", error: error.message });
   }
 };
->>>>>>> Stashed changes
+

@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 
 const menuSchema = new mongoose.Schema(
   {
-    CustomerId: { type: mongoose.Schema.Types.ObjectId, ref: 'Customer' },
+    CustomerId: { type: mongoose.Schema.Types.ObjectId, ref: 'User',required: true },
     MenuList: [
       {
         veg: { type: Boolean, required: true },
@@ -14,9 +14,16 @@ const menuSchema = new mongoose.Schema(
         type: String,
         enum: ['Breakfast', 'Lunch', 'Dinner']
       }
-    ]
+    ],
+  
+  price: { type: Number, required: true, min: 0 },
+  deliveryDate: { type: Date, required: true },
+  orderCutoff: { type: String, required: true },
+  capacity: { type: Number, required: true, min: 1 },
+  soldOut: { type: Boolean, default: false },
   },
-  { timestamps: true }
-);
+  { timestamps: true },
+ );
+
 
 module.exports = mongoose.model('Menu', menuSchema);

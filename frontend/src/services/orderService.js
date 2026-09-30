@@ -14,3 +14,12 @@ export const cancelOrder = async (id) => {
   const response = await API.delete(`/orders/${id}`);
   return response.data;
 };
+export const getChefOrders = async () => {
+  const response = await API.get('/orders/chef');
+  return response.data;
+};
+
+export const updateOrderStatus = async (id, status) => {
+  const response = await API.put(`/orders/${id}/status`, { status });
+  return response.data;
+};

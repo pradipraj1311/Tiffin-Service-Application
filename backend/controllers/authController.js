@@ -21,12 +21,17 @@ exports.registerUser = async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, salt);
 
     const user = await User.create({
-      role,
       name,
       email,
       password: hashedPassword,
+      role,
       PhoneNumber,
-      address
+      address,
+      businessName: req.body.businessName || name, 
+      lat: req.body.lat || null,
+      lng: req.body.lng || null,
+      deliveryRadius: req.body.deliveryRadius || 5
+
     });
 
     if (role === 'Customer') {

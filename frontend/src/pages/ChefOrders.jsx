@@ -25,7 +25,7 @@ export default function ChefOrders() {
       let otp = null;
       if (newStatus === "Delivered") {
         otp = window.prompt(
-          "To complete delivery, enter the 4-digit OTP provided by the Customer:",
+          "To complete delivery, enter the 4-digit OTP provided by the Customer:"
         );
         if (!otp) return;
       }
@@ -34,8 +34,8 @@ export default function ChefOrders() {
 
       setOrders(
         orders.map((o) =>
-          o._id === orderId ? { ...o, status: newStatus } : o,
-        ),
+          o._id === orderId ? { ...o, status: newStatus } : o
+        )
       );
       alert(`Order successfully marked as ${newStatus}`);
     } catch (error) {
