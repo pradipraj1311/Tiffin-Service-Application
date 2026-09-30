@@ -14,6 +14,21 @@ const orderSchema = new mongoose.Schema(
       required: true,
     },
     orderQuantity: { type: Number, required: true, default: 1 },
+    orderStatus: { type: Boolean, default: false },
+    status: {
+      type: String,
+      enum: [
+        "Pending",
+        "Preparing",
+        "Out for Delivery",
+        "Delivered",
+        "Cancelled",
+      ],
+      default: "Pending",
+    },
+    deliveryOTP: { type: String, required: true },
+  },
+
 status: { 
     type: String, 
     enum: ['Pending', 'Preparing', 'Out for Delivery', 'Delivered', 'Cancelled'], 
