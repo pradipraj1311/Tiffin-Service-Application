@@ -110,6 +110,34 @@ exports.verifyEmail = async (req, res) => {
     res.status(500).json({ message: 'Server Error', error: error.message });
   }
 };
+exports.updateUserProfile = async (req, res) => {
+  try {
+    const { 
+      name, PhoneNumber, altPhone, address, landmark, deliveryNotes, 
+      businessName, fssai, isProfileComplete, verificationStatus 
+    } = req.body;
+
+    const user = await User.findById(req.user._id);
+    if (!user) return res.status(404).json({ message: 'User not found' });
+
+    user.name = name || user.name;
+    user.PhoneNumber = PhoneNumber || user.PhoneNumber;
+    user.altPhone = altPhone || user.altPhone;
+    user.address = address || user.address;
+    user.landmark = landmark || user.landmark;
+    user.deliveryNotes = deliveryNotes || user.deliveryNotes;
+    user.businessName = businessName || user.businessName;
+    user.fssai = fssai || user.fssai;
+
+    if (isProfileComplete !== undefined) user.isProfileComplete = isProfileComplete;
+    if (verificationStatus !== undefined) user.verificationStatus = verificationStatus;
+
+    await user.save();
+    res.status(200).json({ message: 'Profile updated successfully', user });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+};
 
 exports.loginUser = async (req, res) => {
   try {
@@ -126,6 +154,9 @@ exports.loginUser = async (req, res) => {
         name: user.name,
         email: user.email,
         role: user.role,
+        isProfileComplete: user.isProfileComplete,
+        verificationStatus: user.verificationStatus,
+          isSubscribed: user.isSubscribed,
         token: generateToken(user._id),
       });
     } else {
@@ -133,5 +164,13 @@ exports.loginUser = async (req, res) => {
     }
   } catch (error) {
     res.status(500).json({ message: 'Server error', error: error.message });
+  }
+};
+exports.getMe = async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id || req.user.id).select('-password');
+    res.json(user);
+  } catch (error) {
+    res.status(500).json({ message: 'Server error fetching user' });
   }
 };

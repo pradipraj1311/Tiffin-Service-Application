@@ -18,7 +18,7 @@ router
 
 router.route('/:id')
   .get(getTiffinById);
-router.route(':id').post(protect, authorize("Chef", "Admin"), createTiffin);
+// router.route(':id').post(protect, authorize("Chef", "Admin"), createTiffin);
 
 
 
@@ -28,5 +28,6 @@ router.route(":id").delete(protect, authorize('Chef', 'Admin'), deleteTiffin);
 
 
 router.route("/:id").get(getTiffinById);
+router.route("/:id").post(protect,authorize('chef','admin'),checkChefAccess, createTiffin);
 
 module.exports = router;

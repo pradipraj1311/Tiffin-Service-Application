@@ -122,14 +122,11 @@ export default function CustomerDashboard() {
     const deliveryDate = new Date(tiffin.deliveryDate);
     const today = new Date();
 
-    // Normalize to midnight for accurate day comparison
     const deliveryDateOnly = new Date(deliveryDate.setHours(0, 0, 0, 0));
     const todayOnly = new Date(new Date().setHours(0, 0, 0, 0));
 
-    // If delivery date is in the past, it's expired
     if (deliveryDateOnly < todayOnly) return true;
 
-    // If delivery is today, check if current time has passed the orderCutoff
     if (deliveryDateOnly.getTime() === todayOnly.getTime()) {
       const [cutoffHour, cutoffMinute] = tiffin.orderCutoff.split(":").map(Number);
       const now = new Date();

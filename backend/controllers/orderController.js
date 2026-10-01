@@ -106,7 +106,7 @@ exports.updateOrderStatus = async (req, res) => {
 exports.createOrder = async (req, res) => {
   try {
     const { post_MenuId, orderQuantity } = req.body;
-    const deliveryOTP = Math.floor(1000 + Math.random() * 9000).toString(); // Random 4 digits
+    const deliveryOTP = Math.floor(1000 + Math.random() * 9000).toString(); 
 
     const order = await Order.create({
       CustomerId: req.user._id,
@@ -120,7 +120,6 @@ exports.createOrder = async (req, res) => {
   }
 };
 
-//  Verify OTP during status update
 exports.updateOrderStatus = async (req, res) => {
   try {
     const { status, otp } = req.body;
