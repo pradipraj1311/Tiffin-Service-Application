@@ -2,13 +2,15 @@ const express = require("express");
 const cors = require("cors");
 const dotenv = require("dotenv");
 const connectDB = require("./config/db");
+
 const authRoutes = require("./routes/authRoutes");
 const tiffinRoutes = require("./routes/tiffinRoutes");
 const orderRoutes = require("./routes/orderRoutes");
 const notificationRoutes = require('./routes/notificationRoutes');
 const paymentRoutes = require("./routes/paymentRoutes");
 const subscriptionRoutes = require("./routes/subscriptionRoutes");
-
+const userRoutes = require('./routes/userRoutes');
+const adminRoutes = require('./routes/adminRoutes'); 
 dotenv.config();
 
 const app = express();
@@ -16,11 +18,14 @@ const app = express();
 app.use(cors());
 
 app.use(express.json());
+
 app.use(express.urlencoded({ extended: true }));
 app.use("/api/auth", authRoutes);
 app.use("/api/tiffins", tiffinRoutes);
 app.use("/api/orders", orderRoutes);
 app.use('/api/notifications', notificationRoutes);
+app.use('/api/users', userRoutes);
+app.use('/api/admin', adminRoutes); 
 
 app.use("/api/payments", paymentRoutes);
 app.use("/api/subscriptions", subscriptionRoutes);

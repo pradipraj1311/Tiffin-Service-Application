@@ -1,22 +1,9 @@
-const express = require("express");
+const express = require('express');
 const router = express.Router();
-const {
-  getPlans,
-  subscribe,
-  getSubscription,
-  getSubscriptionStatus,
-  cancelSubscription,
-} = require("../controllers/subscriptionController");
-const { protect, authorize } = require("../middleware/authMiddleware");
+const { protect, authorize } = require('../middleware/authMiddleware');
+const { createOrder, verifyPayment } = require('../controllers/subscriptionController');
 
-router.route("/plans").get(getPlans);
-
-router.route("/").post(protect, authorize("Chef"), subscribe);
-
-router.route("/:id").get(protect, getSubscription);
-
-router.route("/:id/status").get(protect, getSubscriptionStatus);
-
-router.route("/:id/cancel").put(protect, cancelSubscription);
+router.post('/create-order', protect, authorize('Chef'), createOrder);
+router.post('/verify-payment', protect, authorize('Chef'), verifyPayment);
 
 module.exports = router;

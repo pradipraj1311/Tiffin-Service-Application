@@ -12,7 +12,8 @@ import Notifications from "./pages/Notifications";
 import MenuHistory from './pages/MenuHistory';
 import ChefOrders from "./pages/ChefOrders";
 import VerifyEmail from './pages/VerifyEmail';
-
+import Profile from './pages/Profile';
+import AdminDashboard from './pages/AdminDashboard';
 
 function App() {
   return (
@@ -25,7 +26,11 @@ function App() {
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
             <Route path="/verify-email/:token" element={<VerifyEmail />} />
-            
+            <Route path="/admin-dashboard" element={
+  <ProtectedRoute allowedRoles={['Admin']}>
+    <AdminDashboard />
+  </ProtectedRoute>
+} />
             <Route path="/dashboard" element={
               <ProtectedRoute>
                 <Dashboard />
@@ -60,6 +65,13 @@ function App() {
                 <Notifications />
               </ProtectedRoute>
             } />
+   
+            <Route path="/profile" element={
+              <ProtectedRoute allowedRoles={['Chef', 'Customer']}>
+                <Profile />
+              </ProtectedRoute>
+            } />
+            
           </Routes>
         </div>
       </AuthProvider>
