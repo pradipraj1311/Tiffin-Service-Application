@@ -44,6 +44,22 @@ export default function ChefDashboard() {
     }
   };
 
+  const fetchAddressFromOSM = async (lat, lng) => {
+    try {
+      const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`);
+      const data = await response.json();
+      return {
+        street: data.address.road || data.address.suburb || '',
+        city: data.address.city || data.address.town || data.address.county || '',
+        pincode: data.address.postcode || '',
+        fullDisplay: data.display_name
+      };
+    } catch (error) {
+      console.error("OSM Geocoding failed", error);
+      return null;
+    }
+  };
+  
   const handleSubmitMenu = async (e) => {
     e.preventDefault();
     if (mealItems.length === 0) return alert("Please add at least one food item.");
@@ -170,7 +186,7 @@ export default function ChefDashboard() {
               ))}
             </div>
             <div style={{ position: 'relative' }}>
-              <input type="text" placeholder="Type food item (Press Enter or , to add)" value={itemInput} onChange={handleItemInputChange} onKeyDown={handleKeyDown} style={{ marginBottom: 0, border: 'none', background: 'transparent' }} />
+              <input type="text" placeholder="Type food item" value={itemInput} onChange={handleItemInputChange} onKeyDown={handleKeyDown} style={{ marginBottom: 0, border: 'none', background: 'transparent' }} />
               {filteredSuggestions.length > 0 && (
                 <ul style={{ position: 'absolute', background: 'white', border: '1px solid #ccc', width: '100%', listStyle: 'none', padding: 0, zIndex: 10 }}>
                   {filteredSuggestions.map(suggestion => (
@@ -213,46 +229,6 @@ export default function ChefDashboard() {
           </div>
         </form>
       </div>
-      {/* --- 🐞 DUMMY BUG CHECKER PANEL --- */}
-      <div style={{ background: '#ffebee', padding: '15px', border: '2px solid red', margin: '20px 0', borderRadius: '8px' }}>
-        <h4 style={{ color: 'red', marginTop: 0 }}>🐞 Diagnostic Bug Checker</h4>
-        <p><strong>Your Chef ID:</strong> {user._id}</p>
-        <p><strong>Total Tiffins Fetched from DB:</strong> {tiffins.length}</p>
-
-        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px', background: 'white' }}>
-          <thead>
-            <tr style={{ borderBottom: '2px solid #ccc' }}>
-              <th style={{ textAlign: 'left', padding: '5px' }}>Menu ID</th>
-              <th style={{ textAlign: 'left', padding: '5px' }}>Menu's Chef ID</th>
-              <th style={{ textAlign: 'left', padding: '5px' }}>ID Match?</th>
-              <th style={{ textAlign: 'left', padding: '5px' }}>Created Date</th>
-              <th style={{ textAlign: 'left', padding: '5px' }}>7-Day Rule?</th>
-            </tr>
-          </thead>
-          <tbody>
-            {tiffins.map(t => {
-              const rawChefId = typeof t.CustomerId === 'object' ? t.CustomerId?._id : t.CustomerId;
-              const isChefMatch = String(rawChefId) === String(user._id);
-              const isRecent = !t.createdAt || new Date(t.createdAt) >= sevenDaysAgo;
-
-              return (
-                <tr key={t._id} style={{ borderBottom: '1px solid #eee' }}>
-                  <td style={{ padding: '5px' }}>{t._id.substring(0, 6)}...</td>
-                  <td style={{ padding: '5px' }}>{String(rawChefId)}</td>
-                  <td style={{ padding: '5px', color: isChefMatch ? 'green' : 'red', fontWeight: 'bold' }}>
-                    {isChefMatch ? 'YES' : 'NO'}
-                  </td>
-                  <td style={{ padding: '5px' }}>{t.createdAt ? new Date(t.createdAt).toLocaleDateString() : 'MISSING'}</td>
-                  <td style={{ padding: '5px', color: isRecent ? 'green' : 'red', fontWeight: 'bold' }}>
-                    {isRecent ? 'YES' : 'NO'}
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
-      {/* --- END BUG CHECKER --- */}
 
       <h3>Active Menus (Last 7 Days)</h3>
       <div className="card-grid">

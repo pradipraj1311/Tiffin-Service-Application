@@ -46,6 +46,21 @@ export default function CustomerDashboard() {
       setLoading(false);
     }
   };
+  const fetchAddressFromOSM = async (lat, lng) => {
+    try {
+      const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`);
+      const data = await response.json();
+      return {
+        street: data.address.road || data.address.suburb || '',
+        city: data.address.city || data.address.town || data.address.county || '',
+        pincode: data.address.postcode || '',
+        fullDisplay: data.display_name
+      };
+    } catch (error) {
+      console.error("OSM Geocoding failed", error);
+      return null;
+    }
+  };
 
   const loadRazorpay = () => {
     return new Promise((resolve) => {
@@ -131,7 +146,6 @@ export default function CustomerDashboard() {
   const sevenDaysAgo = new Date();
   sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
 
-  // Filter out menus older than 7 days AND menus that have passed their deadline
   const activeTiffins = tiffins.filter((t) => {
     if (!t.createdAt) return true;
     const isWithin7Days = new Date(t.createdAt) >= sevenDaysAgo;
@@ -244,13 +258,23 @@ export default function CustomerDashboard() {
       </div>
 
       {selectedTiffin && (
-        <div
-          style={{
-            position: "fixed", top: 0, left: 0, width: "100%", height: "100%",
-            background: "rgba(0,0,0,0.6)", display: "flex", justifyContent: "center",
-            alignItems: "center", zIndex: 1000,
-          }}
-        >
+       
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '20px' }}>
+              <div style={{ display: 'flex', gap: '10px' }}>
+                <input type="text" placeholder="Flat / House / Apartment No." required style={{ flex: 1, marginBottom: 0 }} />
+                <input type="text" placeholder="Nearest Landmark" required style={{ flex: 1, marginBottom: 0 }} />
+              </div>
+              <textarea placeholder="Delivery Notes (e.g., Leave with security guard)" rows="2" style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #ddd' }}></textarea>
+              
+              <label style={{ fontSize: '14px', fontWeight: 'bold' }}>Dietary Restrictions / Allergies:</label>
+              <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+                {['Jain', 'Nut Allergy', 'Gluten-Free', 'Vegan'].map(tag => (
+                  <label key={tag} style={{ fontSize: '13px', background: '#eee', padding: '5px 10px', borderRadius: '15px', cursor: 'pointer' }}>
+                    <input type="checkbox" style={{ marginRight: '5px' }} /> {tag}
+                  </label>
+                ))}
+              </div>
+
           <div
             style={{
               background: "white", padding: "30px", borderRadius: "12px", width: "90%",

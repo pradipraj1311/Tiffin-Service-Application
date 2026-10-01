@@ -6,7 +6,7 @@ const {
   getTiffinById,
   createTiffin,
 } = require("../controllers/tiffinController");
-const { protect, authorize } = require("../middleware/authMiddleware");
+const { protect, authorize, checkChefAccess } = require("../middleware/authMiddleware");
 
 router.route("/food-items").get(getGlobalFoodItems);
 

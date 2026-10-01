@@ -25,6 +25,18 @@ exports.protect = async (req, res, next) => {
   }
 };
 
+exports.checkChefAccess = async (req, res, next) => {
+  if (req.user.role === 'Chef') {
+    if (!req.user.isProfileComplete) {
+      return res.status(403).json({ message: 'Access Denied: Please complete your Kitchen Profile.' });
+    }
+    if (!req.user.isSubscribed || new Date(req.user.subscriptionExpiresAt) < new Date()) {
+      return res.status(403).json({ message: 'Access Denied: Premium Subscription (₹1999) required.' });
+    }
+  }
+  next(); 
+};
+
 exports.authorize = (...roles) => {
   return (req, res, next) => {
     if (!roles.includes(req.user.role)) {

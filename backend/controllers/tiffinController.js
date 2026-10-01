@@ -112,14 +112,6 @@ exports.getGlobalFoodItems = async (req, res) => {
     res.status(500).json({ message: 'Server Error', error: error.message });
   }
 };
-// exports.getTiffins = async (req, res) => {
-//   try {
-//     const menus = await Menu.find();
-//     res.status(200).json(menus);
-//   } catch (error) {
-//     res.status(500).json({ message: 'Server Error', error: error.message });
-//   }
-// };
 
 exports.getTiffinById = async (req, res) => {
   try {

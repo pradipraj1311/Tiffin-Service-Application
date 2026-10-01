@@ -4,7 +4,7 @@ const orderSchema = new mongoose.Schema(
   {
     CustomerId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Customer",
+      ref: "User", 
       required: true,
     },
     OrderDate: { type: Date, default: Date.now },
@@ -28,13 +28,7 @@ const orderSchema = new mongoose.Schema(
     },
     deliveryOTP: { type: String, required: true },
   },
-
-status: { 
-    type: String, 
-    enum: ['Pending', 'Preparing', 'Out for Delivery', 'Delivered', 'Cancelled'], 
-    default: 'Pending' 
-  }},
-  { timestamps: true },
+  { timestamps: true }
 );
 
 module.exports = mongoose.model("Order", orderSchema);

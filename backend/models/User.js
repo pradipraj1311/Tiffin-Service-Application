@@ -9,6 +9,8 @@ const userSchema = new mongoose.Schema(
     },
     name: { type: String, required: true },
     email: { type: String, required: true, unique: true },
+    isEmailVerified: { type: Boolean, default: false },
+  emailVerifyToken: { type: String },
     password: { type: String, required: true },
     PhoneNumber: { type: Number, required: true },
     address: {
@@ -18,7 +20,22 @@ const userSchema = new mongoose.Schema(
     businessName: { type: String }, 
   lat: { type: Number },         
   lng: { type: Number },          
-  deliveryRadius: { type: Number }
+  deliveryRadius: { type: Number },
+  fssai: { type: String, minlength: 14, maxlength: 14 },
+  isProfileComplete: { type: Boolean, default: false },
+  verificationStatus: { 
+    type: String, 
+    enum: ['Incomplete', 'Pending', 'Approved', 'Rejected'], 
+    default: 'Incomplete' 
+  },
+  
+  isSubscribed: { type: Boolean, default: false },
+  subscriptionExpiresAt: { type: Date },
+  
+  landmark: { type: String },
+  altPhone: { type: Number },
+  deliveryNotes: { type: String },
+  dietaryTags: [{ type: String }],
   },
   { timestamps: true }
 );

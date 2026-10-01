@@ -11,6 +11,7 @@ import Subscriptions from "./pages/Subscriptions";
 import Notifications from "./pages/Notifications";
 import MenuHistory from './pages/MenuHistory';
 import ChefOrders from "./pages/ChefOrders";
+import VerifyEmail from './pages/VerifyEmail';
 
 
 function App() {
@@ -23,6 +24,7 @@ function App() {
             <Route path="/" element={<Home />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
+            <Route path="/verify-email/:token" element={<VerifyEmail />} />
             
             <Route path="/dashboard" element={
               <ProtectedRoute>
