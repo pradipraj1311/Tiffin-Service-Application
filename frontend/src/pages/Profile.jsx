@@ -21,7 +21,9 @@ export default function Profile() {
     landmark: user?.landmark || '',
     deliveryNotes: user?.deliveryNotes || '',
     businessName: user?.businessName || '',
-    fssai: user?.fssai || ''
+    fssai: user?.fssai || '',
+    maxDeliveryRadius: user?.maxDeliveryRadius || 7,
+    deliveryCharges: user?.deliveryCharges || 'All'
   });
 
   const handleChange = (e) => {
@@ -46,7 +48,11 @@ export default function Profile() {
         payload.isProfileComplete = true;
         payload.verificationStatus = 'Pending';
       }
-
+if (user.role === 'Customer') {
+        delete payload.fssai;
+        delete payload.businessName;
+        delete payload.maxDeliveryRadius;
+      }
       await API.put('/users/profile', payload);
       alert(user.role === 'Chef' && !user.isProfileComplete ? "Profile submitted! Awaiting Admin verification." : "Profile updated successfully!");
       window.location.reload();
@@ -95,7 +101,7 @@ export default function Profile() {
 
   return (
     <div className="container" style={{ maxWidth: '800px', marginTop: '30px' }}>
-      <h2 style={{ marginBottom: '20px' }}>Account Settings</h2>
+      <h2 style={{ marginBottom: '20px' }}>Account</h2>
       
       <form onSubmit={handleProfileSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '25px' }}>
         
@@ -107,6 +113,21 @@ export default function Profile() {
             {user.role === 'Chef' && <p style={{ margin: 0 }}><strong>Verification:</strong> {user.verificationStatus}</p>}
           </div>
         </div>
+
+
+        {user.role === 'Customer' && (
+          <div style={{ background: 'white', padding: '20px', borderRadius: '8px', boxShadow: '0 2px 4px rgba(0,0,0,0.05)' }}>
+            <h4 style={{ margin: '0 0 15px 0' }}>Dietary Preferences</h4>
+            <div>
+              <label style={{ fontSize: '13px', fontWeight: 'bold', display: 'block', marginBottom: '8px' }}>Show me menus that are:</label>
+              <select name="dietaryPreference" value={formData.dietaryPreference} onChange={handleChange} style={{ width: '100%', padding: '10px', borderRadius: '4px', border: '1px solid #ccc' }}>
+                <option value="All">All (Veg & Non Veg)</option>
+                <option value="Veg">Pure Veg 🟢</option>
+                <option value="Non-Veg">Non Veg 🔴</option>
+              </select>
+            </div>
+          </div>
+        )}
 
         <div style={{ background: 'white', padding: '20px', borderRadius: '8px', boxShadow: '0 2px 4px rgba(0,0,0,0.05)' }}>
           <h4 style={{ margin: '0 0 15px 0' }}>Personal Information</h4>
@@ -137,7 +158,29 @@ export default function Profile() {
             </div>
           </div>
         )}
-
+        {user.role === 'Chef' && (
+          <div style={{ background: 'white', padding: '20px', borderRadius: '8px', boxShadow: '0 2px 4px rgba(0,0,0,0.05)' }}>
+            <h4 style={{ margin: '0 0 15px 0' }}>Delivery Settings</h4>
+            <div>
+              <label style={{ fontSize: '13px', fontWeight: 'bold', display: 'block', marginBottom: '5px' }}>
+                Maximum Delivery Distance (in km) <span style={{color: 'red'}}>*</span>
+              </label>
+              <input 
+                type="number" 
+                name="maxDeliveryRadius" 
+                value={formData.maxDeliveryRadius} 
+                onChange={handleChange} 
+                min="1" 
+                max="20" 
+                required 
+                style={{ width: '100%', padding: '10px' }} 
+              />
+              <small style={{ color: '#6c757d', display: 'block', marginTop: '5px' }}>
+                Customers outside this radius will not be able to see or order your tiffin.
+              </small>
+            </div>
+          </div>
+        )}
         <div style={{ background: 'white', padding: '20px', borderRadius: '8px', boxShadow: '0 2px 4px rgba(0,0,0,0.05)' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
             <h4 style={{ margin: 0 }}>{user.role === 'Chef' ? 'Kitchen Location' : 'Delivery Address'}</h4>

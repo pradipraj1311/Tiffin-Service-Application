@@ -1,6 +1,8 @@
 const Menu = require('../models/Menu');
 const FoodItem = require('../models/FoodItem');
 const Order = require('../models/Order');
+const User = require('../models/User');
+// const Tiffin = require('../models/Tiffin');
 
 exports.createTiffin = async (req, res) => {
   try {
@@ -32,7 +34,7 @@ for (const item of submittedItems) {
 
 const getDistance = (lat1, lon1, lat2, lon2) => {
   if (!lat1 || !lon1 || !lat2 || !lon2) return null;
-  const R = 6371; // Radius of the earth in km
+  const R = 6371;
   const dLat = (lat2 - lat1) * (Math.PI / 180);
   const dLon = (lon2 - lon1) * (Math.PI / 180);
   const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
@@ -124,5 +126,61 @@ exports.getTiffinById = async (req, res) => {
     res.status(200).json(menu);
   } catch (error) {
     res.status(500).json({ message: 'Server Error', error: error.message });
+  }
+};
+
+// ADD THIS AT THE BOTTOM OF THE FILE
+exports.getAllTiffins = async (req, res) => {
+  try {
+    const tiffins = await Menu.find().populate('CustomerId', 'name businessName').sort({ createdAt: -1 });
+    res.status(200).json(tiffins);
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+};
+exports.getNearbyTiffins = async (req, res) => {
+  try {
+    const customer = await User.findById(req.user._id || req.user.id);
+    
+    // NEW: Check if frontend passed custom coordinates (Zomato-style search bar)
+    const { customLat, customLng } = req.query;
+    const searchLat = customLat ? parseFloat(customLat) : customer.lat;
+    const searchLng = customLng ? parseFloat(customLng) : customer.lng;
+    
+    if (!searchLat || !searchLng) {
+      return res.status(403).json({ code: 'GPS_MISSING', message: 'Please set your delivery location in your profile to see nearby menus.' });
+    }
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0); 
+    
+    const allTiffins = await Menu.find({ 
+      deliveryDate: { $gte: today } 
+    }).populate('CustomerId', 'name businessName lat lng maxDeliveryRadius verificationStatus isSubscribed'); 
+
+    const nearbyTiffins = allTiffins.filter(tiffin => {
+      const chef = tiffin.CustomerId;
+      
+      if (!chef || !chef.lat || !chef.lng || chef.verificationStatus !== 'Approved' || !chef.isSubscribed) return false;
+
+      // USE searchLat and searchLng for the calculation
+      const distance = getDistance(searchLat, searchLng, chef.lat, chef.lng);
+      
+      tiffin._doc.distance = parseFloat(distance.toFixed(1));
+
+      const chefRadius = chef.maxDeliveryRadius || 7;
+      if (distance > chefRadius) return false;
+
+      if (customer.dietaryPreference === 'Veg' && !tiffin.MenuList[0].veg) return false;
+      if (customer.dietaryPreference === 'Non-Veg' && tiffin.MenuList[0].veg) return false;
+
+      return true;
+    });
+
+    nearbyTiffins.sort((a, b) => a._doc.distance - b._doc.distance);
+
+    res.status(200).json(nearbyTiffins);
+  } catch (error) {
+    res.status(500).json({ message: 'Server error calculating nearby tiffins.' });
   }
 };

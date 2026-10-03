@@ -1,11 +1,11 @@
 const User = require('../models/User');
-
+const Waitlist = require('../models/Waitlist');
 exports.updateUserProfile = async (req, res) => {
   try {
     const { 
       name, PhoneNumber, altPhone, address, landmark, deliveryNotes, 
       businessName, fssai, isProfileComplete, verificationStatus,
-      lat, lng 
+      lat, lng,maxDeliveryRadius,dietaryPreferences
     } = req.body;
 
     const user = await User.findById(req.user._id || req.user.id);
@@ -22,8 +22,10 @@ exports.updateUserProfile = async (req, res) => {
 
     if (landmark !== undefined) user.landmark = landmark;
     if (deliveryNotes !== undefined) user.deliveryNotes = deliveryNotes;
-    if (businessName !== undefined) user.businessName = businessName;
-    if (fssai !== undefined) user.fssai = fssai;
+    if (businessName) user.businessName = businessName;
+    if (fssai) user.fssai = fssai;
+    if(maxDeliveryRadius !== undefined) user.maxDeliveryRadius = maxDeliveryRadius;
+    if(dietaryPreferences !== undefined) user.dietaryPreferences = dietaryPreferences;
 
     if (isProfileComplete !== undefined) user.isProfileComplete = isProfileComplete;
     if (verificationStatus !== undefined) user.verificationStatus = verificationStatus;
@@ -31,7 +33,40 @@ exports.updateUserProfile = async (req, res) => {
     await user.save();
     res.status(200).json({ message: 'Profile updated successfully', user });
   } catch (error) {
-    console.error("🚨 PROFILE UPDATE CRASH:", error);
+    console.error(" PROFILE UPDATE CRASH:", error);
     res.status(500).json({ message: `Database error: ${error.message}`, error: error.message });
+  }
+};
+
+// ... existing updateUserProfile function ...
+
+exports.addToWaitlist = async (req, res) => {
+  try {
+    const { locationName, lat, lng } = req.body;
+    
+    if (!locationName || !lat || !lng) {
+      return res.status(400).json({ message: 'Location data is missing.' });
+    }
+
+    const user = await User.findById(req.user._id || req.user.id);
+
+    // Try to create the waitlist entry. The MongoDB unique index will prevent duplicates.
+    try {
+      await Waitlist.create({
+        customerId: user._id,
+        email: user.email,
+        locationName,
+        lat,
+        lng
+      });
+      res.status(201).json({ message: 'Added to waitlist successfully.' });
+    } catch (dbError) {
+      if (dbError.code === 11000) { // MongoDB duplicate key error code
+        return res.status(400).json({ message: 'You are already on the waitlist for this area.' });
+      }
+      throw dbError;
+    }
+  } catch (error) {
+    res.status(500).json({ message: 'Server error adding to waitlist.', error: error.message });
   }
 };
