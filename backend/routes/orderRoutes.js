@@ -1,26 +1,26 @@
 const express = require("express");
 const router = express.Router();
-const {
-  createOrder,
-  getUserOrders,
-  getOrderById,
-  cancelOrder,
-  getChefOrders,
-  updateOrderStatus,
-} = require("../controllers/orderController");
 const { protect, authorize } = require("../middleware/authMiddleware");
+const { 
+  initiateOrder, 
+  verifyAndPlaceOrder, 
+  getUserOrders, 
+  getChefOrders, 
+  updateOrderStatus ,rateOrder,
+} = require("../controllers/orderController");
 
 
-router.route("/chef").get(protect, authorize("Chef","Admin"), getChefOrders);
-router.route('/').post(protect, createOrder).get(protect, getUserOrders);
-router.route('/:id').delete(protect, cancelOrder);
+router.post("/initiate", protect, authorize('Customer'), initiateOrder);
 
-router.route('/:id/status').put(protect, authorize('Chef', 'Admin'), updateOrderStatus);
-router
-  .route("/")
-  .post(protect, authorize("Customer"), createOrder)
-  .get(protect, authorize("Customer"), getUserOrders);
+router.post("/verify", protect, authorize('Customer'), verifyAndPlaceOrder);
 
-router.route("/:id").get(protect, getOrderById).delete(protect, cancelOrder);
+router.get("/my-orders", protect, authorize('Customer'), getUserOrders);
+router.post("/:id/rate", protect, authorize('Customer'), rateOrder);
+
+
+
+router.get("/chef-orders", protect, authorize('Chef', 'Admin'), getChefOrders);
+
+router.put("/:id/status", protect, authorize('Chef', 'Admin'), updateOrderStatus);
 
 module.exports = router;

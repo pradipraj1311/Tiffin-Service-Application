@@ -36,6 +36,9 @@ const userSchema = new mongoose.Schema(
   altPhone: { type: Number },
   deliveryNotes: { type: String },
   dietaryTags: [{ type: String }],
+  averageRating: { type: Number, default: 0 },
+  totalRatings: { type: Number, default: 0 },
+  
   },
   { timestamps: true }
 );

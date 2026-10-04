@@ -6,17 +6,33 @@ import API from '../services/api';
 export default function CustomerDashboard() {
   const { user } = useContext(AuthContext);
   const navigate = useNavigate();
+  
   const [tiffins, setTiffins] = useState([]);
   const [loading, setLoading] = useState(true);
   const [addressMissing, setAddressMissing] = useState(false);
   
+  const defaultAddress = user?.address?.street && user?.address?.city 
+    ? `${user.address.street}, ${user.address.city}` 
+    : (user?.address?.city || 'Your Current Address');
+
+  const [displayLocationName, setDisplayLocationName] = useState(defaultAddress);
+  const [activeSearchCoords, setActiveSearchCoords] = useState(null);
+  const [isLocationDropdownOpen, setIsLocationDropdownOpen] = useState(false);
   const [inputValue, setInputValue] = useState('');
   const [suggestions, setSuggestions] = useState([]);
   const [isSearchingLocation, setIsSearchingLocation] = useState(false);
-  const [displayLocationName, setDisplayLocationName] = useState(user?.address?.city || 'Select Area ');
-  const [activeSearchCoords, setActiveSearchCoords] = useState(null);
   
   const [notifyStatus, setNotifyStatus] = useState('Notify Me When Kitchens Open Here');
+
+  useEffect(() => {
+    if (!activeSearchCoords) { 
+      setDisplayLocationName(
+        user?.address?.street && user?.address?.city 
+          ? `${user.address.street}, ${user.address.city}` 
+          : (user?.address?.city || 'Your Saved Address')
+      );
+    }
+  }, [user, activeSearchCoords]);
 
   useEffect(() => {
     fetchNearbyTiffins();
@@ -55,7 +71,7 @@ export default function CustomerDashboard() {
       } else {
         setSuggestions([]);
       }
-    }, 600);
+    }, 600); 
 
     return () => clearTimeout(delaySearch);
   }, [inputValue]);
@@ -67,6 +83,7 @@ export default function CustomerDashboard() {
     setSuggestions([]);
     setLoading(true);
     setNotifyStatus('Notify Me When Kitchens Open Here'); 
+    setIsLocationDropdownOpen(false);
     
     setActiveSearchCoords({ lat: loc.lat, lng: loc.lon });
     
@@ -81,11 +98,24 @@ export default function CustomerDashboard() {
     }
   };
 
-  const handleNotifyMe = async () => {
-    const latToSave = activeSearchCoords ? activeSearchCoords.lat : user?.lat;
-    const lngToSave = activeSearchCoords ? activeSearchCoords.lng : user?.lng;
+  const handleResetToDefault = () => {
+    setDisplayLocationName(
+      user?.address?.street && user?.address?.city 
+        ? `${user.address.street}, ${user.address.city}` 
+        : (user?.address?.city || 'Your Saved Address')
+    );
+    setActiveSearchCoords(null);
+    setInputValue('');
+    setIsLocationDropdownOpen(false);
+    setNotifyStatus('Notify Me When Kitchens Open Here');
+    fetchNearbyTiffins();
+  };
 
-    if (!latToSave || !lngToSave) return alert("Location data is missing. Please search an area or set your GPS.");
+  const handleNotifyMe = async () => {
+    const latToSave = activeSearchCoords ? activeSearchCoords.lat : user.lat;
+    const lngToSave = activeSearchCoords ? activeSearchCoords.lng : user.lng;
+
+    if (!latToSave || !lngToSave) return alert("Location data is missing.");
 
     try {
       setNotifyStatus('Saving...');
@@ -94,7 +124,7 @@ export default function CustomerDashboard() {
         lat: latToSave,
         lng: lngToSave
       });
-      setNotifyStatus('We will email you.');
+      setNotifyStatus('Saved! We will email you.');
     } catch (error) {
       if (error.response?.status === 400) {
         setNotifyStatus(' You are already on the list for this area.');
@@ -118,31 +148,6 @@ export default function CustomerDashboard() {
           <button onClick={() => navigate('/profile')} style={{ background: '#007bff', color: 'white', padding: '12px 25px', border: 'none', borderRadius: '6px', fontSize: '16px', fontWeight: 'bold', cursor: 'pointer', width: '100%', marginBottom: '15px' }}>
             Set My Permanent Address
           </button>
-          
-          <div style={{ position: 'relative', width: '100%' }}>
-            <input 
-              type="text" 
-              placeholder="Or search for a city or area..." 
-              value={inputValue} 
-              onChange={(e) => setInputValue(e.target.value)} 
-              style={{ width: '100%', padding: '12px', borderRadius: '6px', border: '1px solid #ccc', fontSize: '15px' }} 
-            />
-            {isSearchingLocation && <div style={{ position: 'absolute', right: '10px', top: '12px', fontSize: '12px', color: '#888' }}>Searching...</div>}
-            
-            {suggestions.length > 0 && (
-              <ul style={{ position: 'absolute', top: '100%', left: 0, right: 0, background: 'white', border: '1px solid #ddd', borderRadius: '0 0 6px 6px', listStyle: 'none', padding: 0, margin: 0, zIndex: 100, maxHeight: '200px', overflowY: 'auto', boxShadow: '0 4px 6px rgba(0,0,0,0.1)', textAlign: 'left' }}>
-                {suggestions.map((loc) => (
-                  <li 
-                    key={loc.place_id} 
-                    onClick={() => handleSelectLocation(loc)} 
-                    style={{ padding: '12px 15px', borderBottom: '1px solid #eee', cursor: 'pointer', fontSize: '14px', color: '#333' }}
-                  >
-                    {loc.display_name}
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
         </div>
       </div>
     );
@@ -151,42 +156,62 @@ export default function CustomerDashboard() {
   return (
     <div className="container" style={{ marginTop: '30px' }}>
       
-      <div style={{ background: 'white', padding: '15px 20px', borderRadius: '8px', boxShadow: '0 2px 4px rgba(0,0,0,0.05)', marginBottom: '25px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '15px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <span style={{ fontSize: '24px' }}>📍</span>
-          <div>
+      <div style={{ background: 'white', padding: '15px 20px', borderRadius: '8px', boxShadow: '0 2px 4px rgba(0,0,0,0.05)', marginBottom: '25px' }}>
+        
+        <div 
+          onClick={() => setIsLocationDropdownOpen(!isLocationDropdownOpen)}
+          style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer' }}
+        >
+          <span style={{ fontSize: '26px', color: '#e23744' }}>📍</span>
+          <div style={{ flex: 1, overflow: 'hidden' }}>
             <p style={{ margin: 0, fontSize: '11px', color: '#777', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Delivering To</p>
-            <p style={{ margin: 0, fontSize: '16px', fontWeight: 'bold', color: '#333' }}>
-              {displayLocationName}
+            <p style={{ margin: 0, fontSize: '16px', fontWeight: 'bold', color: '#333', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '350px' }}>
+                {displayLocationName}
+              </span>
+              <span style={{ fontSize: '12px', transition: 'transform 0.3s', transform: isLocationDropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)' }}>▼</span>
             </p>
           </div>
         </div>
         
-        <div style={{ position: 'relative', minWidth: '280px', flex: 1, maxWidth: '400px' }}>
-          <input 
-            type="text" 
-            placeholder="Search a different area..." 
-            value={inputValue} 
-            onChange={(e) => setInputValue(e.target.value)} 
-            style={{ width: '100%', padding: '10px 15px', borderRadius: '6px', border: '1px solid #ccc', fontSize: '14px', outline: 'none' }} 
-          />
-          {isSearchingLocation && <span style={{ position: 'absolute', right: '10px', top: '10px', fontSize: '12px', color: '#999' }}>Searching...</span>}
-          
-          {suggestions.length > 0 && (
-            <ul style={{ position: 'absolute', top: '100%', left: 0, right: 0, background: 'white', border: '1px solid #ddd', borderRadius: '4px', listStyle: 'none', padding: 0, margin: '5px 0 0 0', zIndex: 100, maxHeight: '250px', overflowY: 'auto', boxShadow: '0 4px 12px rgba(0,0,0,0.15)' }}>
-              {suggestions.map((loc) => (
-                <li 
-                  key={loc.place_id} 
-                  onClick={() => handleSelectLocation(loc)} 
-                  style={{ padding: '12px 15px', borderBottom: '1px solid #f0f0f0', cursor: 'pointer', fontSize: '13px', color: '#444', lineHeight: '1.4' }}
-                >
-                  <strong style={{ display: 'block', color: '#000', marginBottom: '2px' }}>{loc.display_name.split(',')[0]}</strong>
-                  {loc.display_name.split(',').slice(1).join(', ')}
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
+        {isLocationDropdownOpen && (
+          <div style={{ position: 'relative', marginTop: '15px', borderTop: '1px solid #eee', paddingTop: '15px' }}>
+            
+            {activeSearchCoords && (
+              <button 
+                onClick={handleResetToDefault}
+                style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'transparent', border: 'none', color: '#e23744', fontWeight: 'bold', fontSize: '14px', cursor: 'pointer', marginBottom: '15px', padding: '0' }}
+              >
+                 Use my saved profile address
+              </button>
+            )}
+
+            <input 
+              type="text" 
+              placeholder="Search a different area (e.g. Alkapuri, Vadodara)..." 
+              value={inputValue} 
+              onChange={(e) => setInputValue(e.target.value)} 
+              autoFocus
+              style={{ width: '100%', padding: '12px 15px', borderRadius: '8px', border: '1px solid #ddd', fontSize: '15px', outline: 'none', boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.05)' }} 
+            />
+            {isSearchingLocation && <span style={{ position: 'absolute', right: '15px', top: activeSearchCoords ? '55px' : '28px', fontSize: '12px', color: '#999' }}>Searching...</span>}
+            
+            {suggestions.length > 0 && (
+              <ul style={{ position: 'absolute', top: '100%', left: 0, right: 0, background: 'white', border: '1px solid #ddd', borderRadius: '4px', listStyle: 'none', padding: 0, margin: '5px 0 0 0', zIndex: 100, maxHeight: '250px', overflowY: 'auto', boxShadow: '0 8px 16px rgba(0,0,0,0.1)' }}>
+                {suggestions.map((loc) => (
+                  <li 
+                    key={loc.place_id} 
+                    onClick={() => handleSelectLocation(loc)} 
+                    style={{ padding: '12px 15px', borderBottom: '1px solid #f0f0f0', cursor: 'pointer', fontSize: '14px', color: '#444' }}
+                  >
+                    <strong style={{ display: 'block', color: '#000', marginBottom: '3px' }}>{loc.display_name.split(',')[0]}</strong>
+                    {loc.display_name.split(',').slice(1).join(', ')}
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        )}
       </div>
 
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
@@ -217,7 +242,7 @@ export default function CustomerDashboard() {
               transition: 'all 0.3s' 
             }}
           >
-            {notifyStatus}
+            {notifyStatus.includes('Saved') || notifyStatus.includes('already') ? notifyStatus : '🔔 ' + notifyStatus}
           </button>
         </div>
       ) : (
@@ -249,6 +274,12 @@ export default function CustomerDashboard() {
                     </p>
                   </div>
                 ))}
+
+                {tiffin.CustomerId?.averageRating > 0 && (
+                  <div style={{ marginTop: '12px', display: 'inline-flex', alignItems: 'center', gap: '5px', background: '#28a745', color: 'white', padding: '4px 8px', borderRadius: '6px', fontSize: '13px', fontWeight: 'bold' }}>
+                    ⭐ {tiffin.CustomerId.averageRating} <span style={{ fontSize: '11px', fontWeight: 'normal', opacity: 0.9 }}>({tiffin.CustomerId.totalRatings})</span>
+                  </div>
+                )}
               </div>
 
               <div style={{ background: '#fff3cd', color: '#856404', padding: '10px', borderRadius: '4px', fontSize: '12px', marginBottom: '15px' }}>

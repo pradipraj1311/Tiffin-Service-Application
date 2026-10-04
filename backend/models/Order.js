@@ -27,6 +27,7 @@ const orderSchema = new mongoose.Schema(
       default: "Pending",
     },
     deliveryOTP: { type: String, required: true },
+    isRated: { type: Boolean, default: false },
   },
   { timestamps: true }
 );

@@ -2,7 +2,6 @@ const Menu = require('../models/Menu');
 const FoodItem = require('../models/FoodItem');
 const Order = require('../models/Order');
 const User = require('../models/User');
-// const Tiffin = require('../models/Tiffin');
 
 exports.createTiffin = async (req, res) => {
   try {
@@ -129,7 +128,6 @@ exports.getTiffinById = async (req, res) => {
   }
 };
 
-// ADD THIS AT THE BOTTOM OF THE FILE
 exports.getAllTiffins = async (req, res) => {
   try {
     const tiffins = await Menu.find().populate('CustomerId', 'name businessName').sort({ createdAt: -1 });
@@ -142,7 +140,6 @@ exports.getNearbyTiffins = async (req, res) => {
   try {
     const customer = await User.findById(req.user._id || req.user.id);
     
-    // NEW: Check if frontend passed custom coordinates (Zomato-style search bar)
     const { customLat, customLng } = req.query;
     const searchLat = customLat ? parseFloat(customLat) : customer.lat;
     const searchLng = customLng ? parseFloat(customLng) : customer.lng;
@@ -156,14 +153,11 @@ exports.getNearbyTiffins = async (req, res) => {
     
     const allTiffins = await Menu.find({ 
       deliveryDate: { $gte: today } 
-    }).populate('CustomerId', 'name businessName lat lng maxDeliveryRadius verificationStatus isSubscribed'); 
-
-    const nearbyTiffins = allTiffins.filter(tiffin => {
+    }).populate('CustomerId', 'name businessName lat lng maxDeliveryRadius verificationStatus isSubscribed averageRating totalRatings');   const nearbyTiffins = allTiffins.filter(tiffin => {
       const chef = tiffin.CustomerId;
       
       if (!chef || !chef.lat || !chef.lng || chef.verificationStatus !== 'Approved' || !chef.isSubscribed) return false;
 
-      // USE searchLat and searchLng for the calculation
       const distance = getDistance(searchLat, searchLng, chef.lat, chef.lng);
       
       tiffin._doc.distance = parseFloat(distance.toFixed(1));

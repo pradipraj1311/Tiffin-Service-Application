@@ -1,30 +1,57 @@
-import { useContext, useState } from 'react';
+import { useContext, useState, useEffect } from 'react';
 import { AuthContext } from '../context/AuthContext';
 import API from '../services/api';
 
 export default function Profile() {
-  const { user } = useContext(AuthContext);
+  const { user, refreshUser } = useContext(AuthContext);
   const [isLocating, setIsLocating] = useState(false);
   
+  const [isInitialized, setIsInitialized] = useState(false);
+  
   const [formData, setFormData] = useState({
-    name: user?.name || '',
-    PhoneNumber: user?.PhoneNumber || '',
-    altPhone: user?.altPhone || '',
+    name: '',
+    PhoneNumber: '',
+    altPhone: '',
     address: {
-      street: user?.address?.street || '',
-      city: user?.address?.city || '',
-      pincode: user?.address?.pincode || '',
-      full: user?.address?.full || ''
+      street: '',
+      city: '',
+      pincode: '',
+      full: ''
     },
-    lat: user?.lat || null,
-    lng: user?.lng || null,
-    landmark: user?.landmark || '',
-    deliveryNotes: user?.deliveryNotes || '',
-    businessName: user?.businessName || '',
-    fssai: user?.fssai || '',
-    maxDeliveryRadius: user?.maxDeliveryRadius || 7,
-    deliveryCharges: user?.deliveryCharges || 'All'
+    lat: null,
+    lng: null,
+    landmark: '',
+    deliveryNotes: '',
+    businessName: '',
+    fssai: '',
+    maxDeliveryRadius: 7, 
+    dietaryPreference: 'All'
   });
+  
+  useEffect(() => {
+    if (user && !isInitialized) {
+      setFormData({
+        name: user.name || '',
+        PhoneNumber: user.PhoneNumber || '',
+        altPhone: user.altPhone || '',
+        address: {
+          street: user.address?.street || '',
+          city: user.address?.city || '',
+          pincode: user.address?.pincode || '',
+          full: user.address?.full || ''
+        },
+        lat: user.lat || null,
+        lng: user.lng || null,
+        landmark: user.landmark || '',
+        deliveryNotes: user.deliveryNotes || '',
+        businessName: user.businessName || '',
+        fssai: user.fssai || '',
+        maxDeliveryRadius: user.maxDeliveryRadius || 7, 
+        dietaryPreference: user.dietaryPreference || 'All'
+      });
+      setIsInitialized(true); // Lock it so it never overwrites again
+    }
+  }, [user, isInitialized]);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -44,18 +71,21 @@ export default function Profile() {
     try {
       const payload = { ...formData };
       
-      if (user.role === 'Chef' && !user.isProfileComplete && formData.fssai && formData.businessName) {
-        payload.isProfileComplete = true;
-        payload.verificationStatus = 'Pending';
-      }
-if (user.role === 'Customer') {
+      if (user.role === 'Customer') {
         delete payload.fssai;
         delete payload.businessName;
         delete payload.maxDeliveryRadius;
       }
+
+      if (user.role === 'Chef' && !user.isProfileComplete && formData.fssai && formData.businessName) {
+        payload.isProfileComplete = true;
+        payload.verificationStatus = 'Pending';
+      }
+
       await API.put('/users/profile', payload);
+      await refreshUser(); 
+      
       alert(user.role === 'Chef' && !user.isProfileComplete ? "Profile submitted! Awaiting Admin verification." : "Profile updated successfully!");
-      window.location.reload();
     } catch (error) {
       console.error("Profile Update Crash:", error.response || error);
       alert(`Error: ${error.response?.data?.message || 'Failed to connect to backend'}`);
@@ -106,14 +136,11 @@ if (user.role === 'Customer') {
       <form onSubmit={handleProfileSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '25px' }}>
         
         <div style={{ background: '#f8f9fa', padding: '20px', borderRadius: '8px', border: '1px solid #ddd' }}>
-          <h4 style={{ margin: '0 0 15px 0', borderBottom: '1px solid #ccc', paddingBottom: '10px' }}>Account Status</h4>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
             <p style={{ margin: 0 }}><strong>Email:</strong> {user.email}</p>
-            <p style={{ margin: 0 }}><strong>Role:</strong> {user.role}</p>
             {user.role === 'Chef' && <p style={{ margin: 0 }}><strong>Verification:</strong> {user.verificationStatus}</p>}
           </div>
         </div>
-
 
         {user.role === 'Customer' && (
           <div style={{ background: 'white', padding: '20px', borderRadius: '8px', boxShadow: '0 2px 4px rgba(0,0,0,0.05)' }}>
@@ -158,6 +185,7 @@ if (user.role === 'Customer') {
             </div>
           </div>
         )}
+
         {user.role === 'Chef' && (
           <div style={{ background: 'white', padding: '20px', borderRadius: '8px', boxShadow: '0 2px 4px rgba(0,0,0,0.05)' }}>
             <h4 style={{ margin: '0 0 15px 0' }}>Delivery Settings</h4>
@@ -176,16 +204,17 @@ if (user.role === 'Customer') {
                 style={{ width: '100%', padding: '10px' }} 
               />
               <small style={{ color: '#6c757d', display: 'block', marginTop: '5px' }}>
-                Customers outside this radius will not be able to see or order your tiffin.
+                Customers outside this distance will not be able to see or order your tiffin.
               </small>
             </div>
           </div>
         )}
+
         <div style={{ background: 'white', padding: '20px', borderRadius: '8px', boxShadow: '0 2px 4px rgba(0,0,0,0.05)' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
             <h4 style={{ margin: 0 }}>{user.role === 'Chef' ? 'Kitchen Location' : 'Delivery Address'}</h4>
             <button type="button" onClick={handleGetLocation} disabled={isLocating} style={{ background: '#007bff', color: 'white', border: 'none', padding: '8px 15px', borderRadius: '4px', cursor: 'pointer', fontSize: '13px', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '5px' }}>
-              {isLocating ? '📍 Capturing GPS...' : '📍 Auto-Detect Location'}
+              {isLocating ? ' Capturing ...' : '📍 Use your currrent Location'}
             </button>
           </div>
           
