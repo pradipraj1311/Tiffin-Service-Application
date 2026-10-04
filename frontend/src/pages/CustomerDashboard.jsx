@@ -247,7 +247,7 @@ export default function CustomerDashboard() {
             To show you the best home-cooked meals, we need to know where to deliver.
           </p>
           <button onClick={() => navigate('/profile')} style={{ background: '#007bff', color: 'white', padding: '12px 25px', border: 'none', borderRadius: '6px', fontSize: '16px', fontWeight: 'bold', cursor: 'pointer', width: '100%', marginBottom: '15px' }}>
-            Set My Permanent Address
+            Set My Location
           </button>
         </div>
       </div>

@@ -44,7 +44,6 @@ export default function Subscriptions() {
             await API.post('/subscriptions/verify-payment', response);
             alert('Payment Successful! Welcome to Premium.');
             await refreshUser(); 
-            navigate('/dashboard'); 
           } catch (err) {
             alert('Payment verification failed on server.');
           }
@@ -66,18 +65,74 @@ export default function Subscriptions() {
     }
   };
 
-  if (user?.isSubscribed) {
+ 
+ if (user?.isSubscribed) {
+    const rawDate = user.subscriptionExpiresAt;
+    const expirationDate = rawDate ? new Date(rawDate) : new Date(new Date().setDate(new Date().getDate() + 30));
+    
+    const today = new Date();
+    const timeDiff = expirationDate.getTime() - today.getTime();
+    const daysRemaining = Math.max(0, Math.ceil(timeDiff / (1000 * 3600 * 24)));
+
     return (
-      <div className="container" style={{ textAlign: 'center', marginTop: '50px' }}>
-        <h2>🎉 You are already Subscribed!</h2>
-        <p>Your Premium access is active. Go to the Dashboard to manage menus.</p>
-        <button onClick={() => navigate('/dashboard')} style={{ padding: '10px 20px', background: '#007bff', color: 'white', borderRadius: '6px', border: 'none', cursor: 'pointer' }}>Go to Dashboard</button>
+      <div className="container" style={{ maxWidth: '800px', marginTop: '40px', paddingBottom: '50px' }}>
+        <h2 style={{ marginBottom: '20px', color: '#333' }}>Subscription Management</h2>
+        
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '20px' }}>
+          
+          <div style={{ background: 'white', borderRadius: '12px', padding: '30px', boxShadow: '0 4px 12px rgba(0,0,0,0.05)', borderTop: '6px solid #28a745', textAlign: 'center' }}>
+            <span style={{ display: 'inline-block', background: '#e8f5e9', color: '#28a745', padding: '6px 15px', borderRadius: '20px', fontSize: '14px', fontWeight: 'bold', textTransform: 'uppercase', marginBottom: '20px' }}>
+              Premium Active
+            </span>
+            
+            <h1 style={{ fontSize: '64px', margin: '0 0 5px 0', color: '#333' }}>
+              {daysRemaining > 0 ? daysRemaining : 0}
+            </h1>
+            <p style={{ margin: '0 0 20px 0', fontSize: '18px', color: '#777', fontWeight: 'bold' }}>Days Remaining</p>
+            
+            <div style={{ background: '#f8f9fa', padding: '15px', borderRadius: '8px', fontSize: '14px', color: '#555', marginBottom: '20px' }}>
+              <strong>Expires on:</strong> {expirationDate.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}
+            </div>
+
+            <button 
+              onClick={() => navigate('/dashboard')} 
+              style={{ width: '100%', padding: '15px', background: '#007bff', color: 'white', border: 'none', borderRadius: '8px', fontSize: '16px', fontWeight: 'bold', cursor: 'pointer' }}
+            >
+              Go to Kitchen Dashboard
+            </button>
+          </div>
+
+          <div style={{ background: 'white', borderRadius: '12px', padding: '30px', boxShadow: '0 4px 12px rgba(0,0,0,0.05)' }}>
+            <h3 style={{ margin: '0 0 20px 0', color: '#333', borderBottom: '1px solid #eee', paddingBottom: '10px' }}>Your Active Benefits</h3>
+            
+            <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '18px', color: '#555', fontSize: '15px' }}>
+              <li style={{ display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
+                <span style={{ fontSize: '18px' }}>1.</span> 
+                <div><strong>Unlimited Menus</strong><br/>Publish as many daily menus as you want.</div>
+              </li>
+              <li style={{ display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
+                <span style={{ fontSize: '18px' }}>2.</span> 
+                <div><strong>0% Platform Commission</strong><br/>You keep 100% of your earnings.</div>
+              </li>
+              <li style={{ display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
+                <span style={{ fontSize: '18px' }}>3.</span> 
+                <div><strong>Dynamic Visibility</strong><br/>Customers within your maximum distance will see your kitchen instantly.</div>
+              </li>
+              <li style={{ display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
+                <span style={{ fontSize: '18px' }}>4.</span> 
+                <div><strong>Secure Order Flow</strong><br/>Accept Razorpay & COD with 4-Digit OTP verification.</div>
+              </li>
+            </ul>
+          </div>
+
+        </div>
       </div>
     );
   }
 
+  
   return (
-    <div className="container" style={{ maxWidth: '900px', marginTop: '40px' }}>
+    <div className="container" style={{ maxWidth: '900px', marginTop: '40px', paddingBottom: '50px' }}>
       <div style={{ textAlign: 'center', marginBottom: '40px' }}>
         <h1 style={{ color: '#333' }}>Grow Your Tiffin Business</h1>
         <p style={{ color: '#666', fontSize: '18px' }}>Activate your Premium Workspace to start accepting orders from thousands of customers.</p>
@@ -91,7 +146,7 @@ export default function Subscriptions() {
           <ul style={{ listStyle: 'none', padding: 0, margin: '30px 0', textAlign: 'left', display: 'flex', flexDirection: 'column', gap: '15px' }}>
             <li style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>✅ <span style={{ fontWeight: 'bold' }}>Unlimited Menu Publications</span></li>
             <li style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>✅ <span>Zero Platform Commission</span></li>
-            <li style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>✅ <span>Dynamic 7km radius visibility</span></li>
+            <li style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>✅ <span>Dynamic visibility</span></li>
             <li style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>✅ <span>Secure Razorpay payouts</span></li>
             <li style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>✅ <span>4-Digit OTP Delivery verification</span></li>
           </ul>
