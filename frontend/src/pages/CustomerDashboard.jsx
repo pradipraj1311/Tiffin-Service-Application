@@ -3,6 +3,16 @@ import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import API from '../services/api';
 
+const loadRazorpayScript = () => {
+  return new Promise((resolve) => {
+    const script = document.createElement('script');
+    script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+    script.onload = () => resolve(true);
+    script.onerror = () => resolve(false);
+    document.body.appendChild(script);
+  });
+};
+
 export default function CustomerDashboard() {
   const { user } = useContext(AuthContext);
   const navigate = useNavigate();
@@ -24,12 +34,16 @@ export default function CustomerDashboard() {
   
   const [notifyStatus, setNotifyStatus] = useState('Notify Me When Kitchens Open Here');
 
+  const [selectedTiffin, setSelectedTiffin] = useState(null);
+  const [orderQuantity, setOrderQuantity] = useState(1);
+  const [isProcessingPayment, setIsProcessingPayment] = useState(false);
+
   useEffect(() => {
     if (!activeSearchCoords) { 
       setDisplayLocationName(
         user?.address?.street && user?.address?.city 
           ? `${user.address.street}, ${user.address.city}` 
-          : (user?.address?.city || 'Your Saved Address')
+          : (user?.address?.city || 'Your Current Address')
       );
     }
   }, [user, activeSearchCoords]);
@@ -102,7 +116,7 @@ export default function CustomerDashboard() {
     setDisplayLocationName(
       user?.address?.street && user?.address?.city 
         ? `${user.address.street}, ${user.address.city}` 
-        : (user?.address?.city || 'Your Saved Address')
+        : (user?.address?.city || 'Your Current Address')
     );
     setActiveSearchCoords(null);
     setInputValue('');
@@ -124,15 +138,102 @@ export default function CustomerDashboard() {
         lat: latToSave,
         lng: lngToSave
       });
-      setNotifyStatus('Saved! We will email you.');
+      setNotifyStatus('✅ Saved! We will email you.');
     } catch (error) {
       if (error.response?.status === 400) {
-        setNotifyStatus(' You are already on the list for this area.');
+        setNotifyStatus('✅ You are already on the list for this area.');
       } else {
         setNotifyStatus('Notify Me When Kitchens Open Here');
         alert("Failed to join waitlist. Please try again.");
       }
     }
+  };
+
+  const processCOD = async () => {
+    if (!selectedTiffin || orderQuantity <= 0) return;
+    try {
+      setIsProcessingPayment(true);
+      
+      await API.post('/orders/cod', {
+        menuId: selectedTiffin._id,
+        orderQuantity
+      });
+      
+      alert(' Order Confirmed');
+      setSelectedTiffin(null);
+      navigate('/my-orders'); 
+    } catch (error) {
+      alert(`Error placing COD order: ${error.response?.data?.message || error.message}`);
+    } finally {
+      setIsProcessingPayment(false);
+    }
+  };
+  const processPayment = async () => {
+    if (!selectedTiffin || orderQuantity <= 0) return;
+
+    try {
+      setIsProcessingPayment(true);
+      
+      const isScriptLoaded = await loadRazorpayScript();
+      if (!isScriptLoaded) {
+        alert('Failed to load Razorpay Checkout. Please check your connection.');
+        setIsProcessingPayment(false);
+        return;
+      }
+
+      const { data } = await API.post('/orders/initiate', {
+        menuId: selectedTiffin._id,
+        orderQuantity
+      });
+
+      const { razorpayOrder, amount } = data;
+
+      const options = {
+        key: import.meta.env.VITE_RAZORPAY_KEY_ID || 'rzp_test_dummy', 
+        amount: amount.toString(),
+        currency: 'INR',
+        name: selectedTiffin.CustomerId?.businessName || 'Tiffin Service',
+        description: `Order for ${orderQuantity} Tiffin(s)`,
+        order_id: razorpayOrder.id,
+        handler: async function (response) {
+          try {
+            const verifyRes = await API.post('/orders/verify', {
+              razorpay_order_id: response.razorpay_order_id,
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_signature: response.razorpay_signature,
+              menuId: selectedTiffin._id,
+              orderQuantity
+            });
+            
+            alert(`Payment Successful!`);
+            setSelectedTiffin(null); 
+            navigate('/my-orders'); 
+          } catch (verifyError) {
+            alert(`Payment verification failed: try again`);
+          }
+        },
+        modal: {
+          ondismiss: function() {
+            setIsProcessingPayment(false);
+          }
+        },
+        prefill: {
+          name: user.name,
+          email: user.email,
+          contact: user.PhoneNumber
+        },
+        theme: {
+          color: '#28a745'
+        }
+      };
+
+      const paymentObject = new window.Razorpay(options);
+      paymentObject.open();
+
+    } catch (error) {
+      alert(`Error initiating order: ${error.response?.data?.message || error.message}`);
+      setIsProcessingPayment(false);
+    } 
   };
 
   if (loading) return <div className="container" style={{ marginTop: '40px', textAlign: 'center' }}>Looking for great food near you...</div>;
@@ -154,7 +255,7 @@ export default function CustomerDashboard() {
   }
 
   return (
-    <div className="container" style={{ marginTop: '30px' }}>
+    <div className="container" style={{ marginTop: '30px', paddingBottom: '100px' }}>
       
       <div style={{ background: 'white', padding: '15px 20px', borderRadius: '8px', boxShadow: '0 2px 4px rgba(0,0,0,0.05)', marginBottom: '25px' }}>
         
@@ -225,7 +326,7 @@ export default function CustomerDashboard() {
         <div style={{ background: 'white', padding: '50px 20px', textAlign: 'center', borderRadius: '8px', boxShadow: '0 4px 12px rgba(0,0,0,0.05)', borderTop: '4px solid #ffc107' }}>
           <h3 style={{ color: '#856404', margin: '0 0 15px 0' }}>No kitchens found in this area </h3>
           <p style={{ color: '#555', fontSize: '16px', maxWidth: '400px', margin: '0 auto 30px auto', lineHeight: '1.6' }}>
-            We are expanding fast, but there are no chefs delivering to this specific location right now.
+            We are expanding fast, but there are no kitches delivering to this specific location right now.
           </p>
           <button 
             onClick={handleNotifyMe}
@@ -287,15 +388,119 @@ export default function CustomerDashboard() {
               </div>
 
               <button 
-                onClick={() => alert('Razorpay Checkout Flow coming next!')}
-                style={{ background: '#28a745', color: 'white', padding: '12px', border: 'none', borderRadius: '6px', width: '100%', fontWeight: 'bold', cursor: 'pointer', marginTop: 'auto' }}
+                onClick={() => {
+                  setSelectedTiffin(tiffin);
+                  setOrderQuantity(1);
+                }}
+                disabled={tiffin.capacity <= 0}
+                style={{ 
+                  background: tiffin.capacity <= 0 ? '#6c757d' : '#28a745', 
+                  color: 'white', 
+                  padding: '12px', 
+                  border: 'none', 
+                  borderRadius: '6px', 
+                  width: '100%', 
+                  fontWeight: 'bold', 
+                  cursor: tiffin.capacity <= 0 ? 'not-allowed' : 'pointer', 
+                  marginTop: 'auto' 
+                }}
               >
-                Order Now
+                {tiffin.capacity <= 0 ? 'Sold Out' : 'Order Now'}
               </button>
             </div>
           ))}
         </div>
       )}
+
+      {selectedTiffin && (
+        <div style={{ 
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, 
+          background: 'rgba(0,0,0,0.6)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000 
+        }}>
+          <div style={{ 
+            background: 'white', padding: '25px', borderRadius: '12px', width: '90%', maxWidth: '400px', 
+            boxShadow: '0 10px 25px rgba(0,0,0,0.2)', position: 'relative'
+          }}>
+            
+            <h3 style={{ margin: '0 0 5px 0', color: '#333' }}>Order Summary</h3>
+            <p style={{ margin: '0 0 20px 0', color: '#777', fontSize: '14px' }}>{selectedTiffin.CustomerId?.businessName}</p>
+            
+            <div style={{ borderTop: '1px dashed #ccc', borderBottom: '1px dashed #ccc', padding: '15px 0', marginBottom: '20px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+                <span style={{ fontWeight: 'bold' }}>Tiffin Price</span>
+                <span style={{ fontWeight: 'bold' }}>₹{selectedTiffin.price}</span>
+              </div>
+              
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '20px' }}>
+                <span style={{ color: '#555' }}>Quantity</span>
+                
+                <div style={{ display: 'flex', alignItems: 'center', background: '#f8f9fa', border: '1px solid #ddd', borderRadius: '6px', overflow: 'hidden' }}>
+                  <button 
+                    onClick={() => setOrderQuantity(Math.max(1, orderQuantity - 1))}
+                    disabled={orderQuantity <= 1}
+                    style={{ background: 'white', border: 'none', padding: '8px 15px', cursor: orderQuantity <= 1 ? 'not-allowed' : 'pointer', color: orderQuantity <= 1 ? '#ccc' : '#e23744', fontWeight: 'bold', fontSize: '18px' }}
+                  >
+                    -
+                  </button>
+                  <span style={{ padding: '0 15px', fontWeight: 'bold', borderLeft: '1px solid #ddd', borderRight: '1px solid #ddd' }}>
+                    {orderQuantity}
+                  </span>
+                  <button 
+                    onClick={() => setOrderQuantity(Math.min(selectedTiffin.capacity, orderQuantity + 1))}
+                    disabled={orderQuantity >= selectedTiffin.capacity}
+                    style={{ background: 'white', border: 'none', padding: '8px 15px', cursor: orderQuantity >= selectedTiffin.capacity ? 'not-allowed' : 'pointer', color: orderQuantity >= selectedTiffin.capacity ? '#ccc' : '#28a745', fontWeight: 'bold', fontSize: '18px' }}
+                  >
+                    +
+                  </button>
+                </div>
+              </div>
+              
+              {orderQuantity >= selectedTiffin.capacity && (
+                <p style={{ margin: '10px 0 0 0', fontSize: '12px', color: '#dc3545', textAlign: 'right' }}>Max capacity reached</p>
+              )}
+            </div>
+
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '25px', fontSize: '18px' }}>
+              <span style={{ fontWeight: 'bold' }}>Total Amount</span>
+              <span style={{ fontWeight: 'bold', color: '#28a745' }}>₹{selectedTiffin.price * orderQuantity}</span>
+            </div>
+
+
+
+           <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              <div style={{ display: 'flex', gap: '10px' }}>
+                <button 
+                  onClick={() => {
+                    setSelectedTiffin(null);
+                    setIsProcessingPayment(false);
+                  }}
+                  disabled={isProcessingPayment}
+                  style={{ flex: 1, padding: '12px', background: '#f8f9fa', color: '#333', border: '1px solid #ccc', borderRadius: '6px', fontWeight: 'bold', cursor: isProcessingPayment ? 'not-allowed' : 'pointer' }}
+                >
+                  Cancel
+                </button>
+                <button 
+                  onClick={processCOD}
+                  disabled={isProcessingPayment}
+                  style={{ flex: 2, padding: '12px', background: '#17a2b8', color: 'white', border: 'none', borderRadius: '6px', fontWeight: 'bold', cursor: isProcessingPayment ? 'wait' : 'pointer' }}
+                >
+                  {isProcessingPayment ? '...' : 'Cash on Delivery'}
+                </button>
+              </div>
+              <button 
+                onClick={processPayment}
+                disabled={isProcessingPayment}
+                style={{ width: '100%', padding: '12px', background: '#28a745', color: 'white', border: 'none', borderRadius: '6px', fontWeight: 'bold', cursor: isProcessingPayment ? 'wait' : 'pointer' }}
+              >
+                {isProcessingPayment ? 'Processing...' : 'Pay Online (Razorpay)'}
+              </button>
+            </div>
+
+
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }

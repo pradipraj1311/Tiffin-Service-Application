@@ -76,6 +76,45 @@ exports.verifyAndPlaceOrder = async (req, res) => {
     res.status(500).json({ message: "Payment verified but failed to save order.", error: error.message });
   }
 };
+// 2.5 PROCESS CASH ON DELIVERY (COD) ORDER
+exports.placeCODOrder = async (req, res) => {
+  try {
+    const { menuId, orderQuantity } = req.body;
+    
+    // FIX: Do not populate here, just grab the raw CustomerId (which is the Chef's ID)
+    const menu = await Menu.findById(menuId);
+    if (!menu) return res.status(404).json({ message: "Menu not found." });
+
+    if (menu.capacity < orderQuantity) {
+      return res.status(400).json({ message: `Only ${menu.capacity} tiffins left!` });
+    }
+
+    const deliveryOTP = Math.floor(1000 + Math.random() * 9000).toString();
+
+    const newOrder = await Order.create({
+      CustomerId: req.user._id || req.user.id,
+      post_MenuId: menuId,
+      orderQuantity,
+      deliveryOTP,
+      status: 'Pending',
+      paymentId: 'COD'
+    });
+
+    menu.capacity -= orderQuantity;
+    await menu.save();
+
+    // 🔔 NOTIFY CHEF: Safely attach to the exact ObjectId of the Chef
+    await Notification.create({
+      userId: menu.CustomerId, 
+      orderId: newOrder._id,
+      message: `🔔 New COD Order! You received a Cash on Delivery order for ${orderQuantity} tiffins. Order ID: #${newOrder._id.toString().slice(-6).toUpperCase()}`
+    });
+
+    res.status(201).json({ message: "COD Order placed successfully!", order: newOrder });
+  } catch (error) {
+    res.status(500).json({ message: "Failed to process COD order.", error: error.message });
+  }
+};
 
 exports.updateOrderStatus = async (req, res) => {
   try {
