@@ -29,7 +29,6 @@ const waitlistSchema = new mongoose.Schema({
   }
 }, { timestamps: true });
 
-// Prevent a user from spamming the same location multiple times
 waitlistSchema.index({ customerId: 1, locationName: 1 }, { unique: true });
 
 module.exports = mongoose.model('Waitlist', waitlistSchema);

@@ -1,37 +1,27 @@
 const Notification = require('../models/Notification');
-const Customer = require('../models/Customer');
-const Chef = require('../models/Chef');
 
-exports.createNotification = async (req, res) => {
+exports.getNotifications = async (req, res) => {
     try {
-        const { CustomerId, chefId } = req.body;
-
-        const notification = await Notification.create({
-            CustomerId,
-            chefId
-        });
-
-        res.status(201).json(notification);
+        const notifications = await Notification.find({ userId: req.user._id || req.user.id }).sort({ createdAt: -1 });
+        res.status(200).json(notifications);
     } catch (error) {
         res.status(500).json({ message: 'Server Error', error: error.message });
     }
 };
 
-exports.getNotifications = async (req, res) => {
+exports.markAsRead = async (req, res) => {
     try {
-        let notifications;
+        await Notification.updateMany({ userId: req.user._id || req.user.id, isRead: false }, { isRead: true });
+        res.status(200).json({ message: 'Notifications marked as read' });
+    } catch (error) {
+        res.status(500).json({ message: 'Server Error', error: error.message });
+    }
+};
 
-        if (req.user.role === 'Customer') {
-            const customer = await Customer.findOne({ userId: req.user._id });
-            notifications = await Notification.find({ CustomerId: customer._id }).populate('chefId');
-        } else if (req.user.role === 'Chef') {
-            const chef = await Chef.findOne({ userId: req.user._id });
-            notifications = await Notification.find({ chefId: chef._id }).populate('CustomerId');
-        } else {
-            notifications = await Notification.find().populate('CustomerId chefId');
-        }
-
-        res.status(200).json(notifications);
+exports.clearNotifications = async (req, res) => {
+    try {
+        await Notification.deleteMany({ userId: req.user._id || req.user.id });
+        res.status(200).json({ message: 'All notifications cleared.' });
     } catch (error) {
         res.status(500).json({ message: 'Server Error', error: error.message });
     }

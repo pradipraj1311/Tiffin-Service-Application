@@ -35,7 +35,6 @@ exports.updateUserProfile = async (req, res) => {
     if (landmark !== undefined) user.landmark = landmark;
     if (deliveryNotes !== undefined) user.deliveryNotes = deliveryNotes;
     
-    // Ignore empty strings for Chef fields
     if (businessName) user.businessName = businessName;
     if (fssai) user.fssai = fssai;
     

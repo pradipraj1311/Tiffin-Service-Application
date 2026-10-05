@@ -1,12 +1,18 @@
-
 import { useState, useContext } from 'react';
 import { loginUser } from '../services/authService'; 
 import { AuthContext } from '../context/AuthContext';
+import { useNavigate, Navigate } from 'react-router-dom'; 
 
 export default function Login() {
   const [formData, setFormData] = useState({ email: '', password: '' });
   const [error, setError] = useState('');
-  const { login } = useContext(AuthContext);
+  
+  const { user, login } = useContext(AuthContext);
+  const navigate = useNavigate();
+
+  if (user) {
+    return <Navigate to="/dashboard" replace />;
+  }
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });

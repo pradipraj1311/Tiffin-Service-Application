@@ -136,6 +136,15 @@ exports.getAllTiffins = async (req, res) => {
     res.status(500).json({ message: 'Server error', error: error.message });
   }
 };
+exports.getChefTiffins = async (req, res) => {
+  try {
+    const tiffins = await Menu.find({ CustomerId: req.user._id || req.user.id }).sort({ createdAt: -1 });
+    res.status(200).json(tiffins);
+  } catch (error) {
+    res.status(500).json({ message: "Failed to fetch your menus", error: error.message });
+  }
+};
+
 exports.getNearbyTiffins = async (req, res) => {
   try {
     const customer = await User.findById(req.user._id || req.user.id);

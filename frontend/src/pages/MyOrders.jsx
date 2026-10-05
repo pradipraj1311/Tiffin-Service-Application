@@ -5,6 +5,10 @@ export default function MyOrders() {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  const [ratingModalData, setRatingModalData] = useState(null); 
+  const [hoveredStar, setHoveredStar] = useState(0);
+  const [selectedStar, setSelectedStar] = useState(0);
+
   useEffect(() => {
     fetchOrders();
   }, []);
@@ -21,7 +25,7 @@ export default function MyOrders() {
   };
 
   const handleCancelOrder = async (orderId) => {
-    if (!window.confirm("Are you sure you want to cancel this order?")) return;
+    if (!window.confirm("Are you sure you want to cancel this order? The chef will be notified.")) return;
     try {
       await API.delete(`/orders/${orderId}`);
       alert("Order successfully cancelled.");
@@ -31,16 +35,24 @@ export default function MyOrders() {
     }
   };
 
-  const handleRateOrder = async (orderId) => {
-    const rating = window.prompt("Rate this meal from 1 to 5 stars:", "5");
-    if (!rating) return;
-    
-    const numRating = parseInt(rating, 10);
-    if (isNaN(numRating) || numRating < 1 || numRating > 5) return alert("Please enter a valid number between 1 and 5.");
-
+  const handleClearHistory = async () => {
+    if (!window.confirm(" ARE YOU SURE? This will permanently delete all your Delivered and Cancelled orders from history")) return;
     try {
-      await API.post(`/orders/${orderId}/rate`, { rating: numRating });
-      alert("Thank you for your rating!");
+      await API.delete('/orders/history/clear');
+      alert("Order history cleared.");
+      fetchOrders();
+    } catch (error) {
+      alert(`Failed to clear history: ${error.response?.data?.message || error.message}`);
+    }
+  };
+
+  const submitRating = async () => {
+    if (selectedStar === 0) return alert("Please select a star rating first.");
+    try {
+      await API.post(`/orders/${ratingModalData}/rate`, { rating: selectedStar });
+      alert("Thank you for your rating! ⭐");
+      setRatingModalData(null);
+      setSelectedStar(0);
       fetchOrders(); 
     } catch (error) {
       alert(`Failed to submit rating: ${error.response?.data?.message || error.message}`);
@@ -51,7 +63,18 @@ export default function MyOrders() {
 
   return (
     <div className="container" style={{ marginTop: '30px', maxWidth: '800px', paddingBottom: '50px' }}>
-      <h2 style={{ marginBottom: '20px', color: '#333' }}>Order History</h2>
+      
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+        <h2 style={{ color: '#333', margin: 0 }}>Order History</h2>
+        {orders.length > 0 && (
+          <button 
+            onClick={handleClearHistory}
+            style={{ background: 'white', color: '#dc3545', border: '1px solid #dc3545', padding: '8px 16px', borderRadius: '6px', fontWeight: 'bold', cursor: 'pointer', fontSize: '13px' }}
+          >
+             Clear History
+          </button>
+        )}
+      </div>
       
       {orders.length === 0 ? (
         <div style={{ background: 'white', padding: '60px 20px', textAlign: 'center', borderRadius: '12px', boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }}>
@@ -88,9 +111,7 @@ export default function MyOrders() {
                 </div>
                 
                 <div style={{ padding: '20px', display: 'flex', gap: '20px', alignItems: 'flex-start' }}>
-                  <div style={{ width: '80px', height: '80px', background: '#f1f1f1', borderRadius: '8px', display: 'flex', justifyContent: 'center', alignItems: 'center', fontSize: '32px' }}>
-                    🍲
-                  </div>
+                  <div style={{ width: '80px', height: '80px', background: '#f1f1f1', borderRadius: '8px', display: 'flex', justifyContent: 'center', alignItems: 'center', fontSize: '32px' }}>🍲</div>
 
                   <div style={{ flex: 1 }}>
                     <h3 style={{ margin: '0 0 8px 0', color: '#333', fontSize: '18px' }}>{kitchenName}</h3>
@@ -98,26 +119,17 @@ export default function MyOrders() {
                     {menu ? (
                       <div style={{ marginBottom: '15px' }}>
                         <p style={{ margin: '0 0 5px 0', fontSize: '14px', color: '#555' }}>
-                          <span style={{ color: menu.MenuList[0]?.veg ? '#28a745' : '#dc3545', fontWeight: 'bold' }}>
-                            {menu.MenuList[0]?.veg ? '🟢 VEG' : '🔴 NON-VEG'}
-                          </span>
-                          {' '}• {menu.MealTypes.join(', ')}
+                          <span style={{ color: menu.MenuList[0]?.veg ? '#28a745' : '#dc3545', fontWeight: 'bold' }}>{menu.MenuList[0]?.veg ? '🟢 VEG' : '🔴 NON-VEG'}</span> • {menu.MealTypes.join(', ')}
                         </p>
-                        <p style={{ margin: 0, fontSize: '14px', color: '#777' }}>
-                          {menu.MenuList.map(m => m.MealNames.join(', ')).join(' | ')}
-                        </p>
+                        <p style={{ margin: 0, fontSize: '14px', color: '#777' }}>{menu.MenuList.map(m => m.MealNames.join(', ')).join(' | ')}</p>
                       </div>
                     ) : (
                       <p style={{ color: '#dc3545', fontSize: '14px' }}>Menu details unavailable (Item deleted by Chef)</p>
                     )}
 
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px dashed #eaeaea', paddingTop: '15px' }}>
-                      <p style={{ margin: 0, fontSize: '14px', color: '#555' }}>
-                        <strong>{order.orderQuantity}</strong> x ₹{menu?.price || 0}
-                      </p>
-                      <p style={{ margin: 0, fontSize: '18px', fontWeight: 'bold', color: '#333' }}>
-                        Total: ₹{totalAmount || 0}
-                      </p>
+                      <p style={{ margin: 0, fontSize: '14px', color: '#555' }}><strong>{order.orderQuantity}</strong> x ₹{menu?.price || 0}</p>
+                      <p style={{ margin: 0, fontSize: '18px', fontWeight: 'bold', color: '#333' }}>Total: ₹{totalAmount || 0}</p>
                     </div>
                   </div>
                 </div>
@@ -129,10 +141,7 @@ export default function MyOrders() {
 
                   <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
                     {order.status === 'Pending' && (
-                      <button 
-                        onClick={() => handleCancelOrder(order._id)}
-                        style={{ background: 'transparent', color: '#dc3545', border: '1px solid #dc3545', padding: '8px 16px', borderRadius: '6px', fontWeight: 'bold', cursor: 'pointer', fontSize: '13px' }}
-                      >
+                      <button onClick={() => handleCancelOrder(order._id)} style={{ background: 'transparent', color: '#dc3545', border: '1px solid #dc3545', padding: '8px 16px', borderRadius: '6px', fontWeight: 'bold', cursor: 'pointer', fontSize: '13px' }}>
                         Cancel Order
                       </button>
                     )}
@@ -140,28 +149,66 @@ export default function MyOrders() {
                     {!isDelivered && order.status !== 'Cancelled' ? (
                       <div style={{ textAlign: 'right' }}>
                         <p style={{ margin: '0 0 3px 0', fontSize: '11px', color: '#e23744', fontWeight: 'bold', textTransform: 'uppercase' }}>Delivery PIN</p>
-                        <h2 style={{ margin: 0, letterSpacing: '4px', color: '#333', fontSize: '24px', background: '#ffebee', padding: '4px 12px', borderRadius: '6px', border: '1px solid #ffcdd2' }}>
-                          {order.deliveryOTP}
-                        </h2>
+                        <h2 style={{ margin: 0, letterSpacing: '4px', color: '#333', fontSize: '24px', background: '#ffebee', padding: '4px 12px', borderRadius: '6px', border: '1px solid #ffcdd2' }}>{order.deliveryOTP}</h2>
                       </div>
                     ) : (
                       isDelivered && !order.isRated && (
-                        <button 
-                          onClick={() => handleRateOrder(order._id)}
-                          style={{ background: 'white', color: '#28a745', border: '1px solid #28a745', padding: '8px 16px', borderRadius: '6px', fontWeight: 'bold', cursor: 'pointer', fontSize: '13px' }}
-                        >
+                        <button onClick={() => setRatingModalData(order._id)} style={{ background: 'white', color: '#28a745', border: '1px solid #28a745', padding: '8px 16px', borderRadius: '6px', fontWeight: 'bold', cursor: 'pointer', fontSize: '13px' }}>
                           ⭐ Rate Chef
                         </button>
                       )
                     )}
                   </div>
                 </div>
-                
               </div>
             );
           })}
         </div>
       )}
+
+      {ratingModalData && (
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.6)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000 }}>
+          <div style={{ background: 'white', padding: '30px', borderRadius: '12px', width: '90%', maxWidth: '350px', textAlign: 'center', boxShadow: '0 10px 25px rgba(0,0,0,0.2)' }}>
+            <h3 style={{ margin: '0 0 10px 0', color: '#333' }}>Rate Your Meal</h3>
+            <p style={{ margin: '0 0 20px 0', color: '#777', fontSize: '14px' }}>How was the food and delivery experience?</p>
+            
+            <div style={{ display: 'flex', justifyContent: 'center', gap: '10px', marginBottom: '30px' }}>
+              {[1, 2, 3, 4, 5].map((star) => (
+                <span 
+                  key={star}
+                  onMouseEnter={() => setHoveredStar(star)}
+                  onMouseLeave={() => setHoveredStar(0)}
+                  onClick={() => setSelectedStar(star)}
+                  style={{ 
+                    fontSize: '45px', 
+                    cursor: 'pointer', 
+                    color: (hoveredStar || selectedStar) >= star ? '#ffc107' : '#e4e5e9',
+                    transition: 'color 0.2s'
+                  }}
+                >
+                  ★
+                </span>
+              ))}
+            </div>
+            
+            <div style={{ display: 'flex', gap: '10px' }}>
+              <button 
+                onClick={() => { setRatingModalData(null); setSelectedStar(0); }} 
+                style={{ flex: 1, padding: '12px', background: '#f8f9fa', border: '1px solid #ccc', borderRadius: '6px', fontWeight: 'bold', cursor: 'pointer', color: '#333' }}
+              >
+                Cancel
+              </button>
+              <button 
+                onClick={submitRating} 
+                style={{ flex: 1, padding: '12px', background: '#28a745', color: 'white', border: 'none', borderRadius: '6px', fontWeight: 'bold', cursor: 'pointer' }}
+              >
+                Submit Rating
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }

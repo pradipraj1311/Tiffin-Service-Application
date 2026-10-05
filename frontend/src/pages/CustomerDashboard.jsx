@@ -189,7 +189,7 @@ export default function CustomerDashboard() {
       const { razorpayOrder, amount } = data;
 
       const options = {
-        key: import.meta.env.VITE_RAZORPAY_KEY_ID || 'rzp_test_dummy', 
+        key: import.meta.env.RAZORPAY_KEY || RAZORPAY_KEY,
         amount: amount.toString(),
         currency: 'INR',
         name: selectedTiffin.CustomerId?.businessName || 'Tiffin Service',
@@ -492,7 +492,7 @@ export default function CustomerDashboard() {
                 disabled={isProcessingPayment}
                 style={{ width: '100%', padding: '12px', background: '#28a745', color: 'white', border: 'none', borderRadius: '6px', fontWeight: 'bold', cursor: isProcessingPayment ? 'wait' : 'pointer' }}
               >
-                {isProcessingPayment ? 'Processing...' : 'Pay Online (Razorpay)'}
+                {isProcessingPayment ? 'Processing...' : 'Pay Online'}
               </button>
             </div>
 

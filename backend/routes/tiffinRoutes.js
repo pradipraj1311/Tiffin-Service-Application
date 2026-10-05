@@ -6,7 +6,8 @@ const {
   deleteTiffin, 
   getNearbyTiffins,
   getTiffinById,
-  createTiffin 
+  createTiffin ,
+  getChefTiffins
 } = require("../controllers/tiffinController");
 const { protect, authorize, checkChefAccess } = require("../middleware/authMiddleware");
 
@@ -20,5 +21,6 @@ router.route("/:id")
   .get(getTiffinById)
   .put(protect, authorize('Chef', 'Admin'), updateTiffin)
   .delete(protect, authorize('Chef', 'Admin'), deleteTiffin);
+router.get("/", protect, authorize('Chef', 'Admin'), getChefTiffins);
 
 module.exports = router;

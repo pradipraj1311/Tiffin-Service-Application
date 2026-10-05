@@ -49,7 +49,7 @@ export default function Profile() {
         maxDeliveryRadius: user.maxDeliveryRadius || 7, 
         dietaryPreference: user.dietaryPreference || 'All'
       });
-      setIsInitialized(true); // Lock it so it never overwrites again
+      setIsInitialized(true); 
     }
   }, [user, isInitialized]);
 

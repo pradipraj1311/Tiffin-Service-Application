@@ -2,7 +2,6 @@ import { useContext, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import API from '../services/api';
-
 export default function Subscriptions() {
   const { user, refreshUser } = useContext(AuthContext);
   const navigate = useNavigate();
@@ -33,7 +32,7 @@ export default function Subscriptions() {
       const orderData = orderRes.data;
 
       const options = {
-        key: import.meta.env.VITE_RAZORPAY_KEY_ID || 'rzp_test_dummy', 
+        key: import.meta.env.RAZORPAY_KEY || RAZORPAY_KEY,
         amount: orderData.amount,
         currency: orderData.currency,
         name: 'Tiffin Service Platform',

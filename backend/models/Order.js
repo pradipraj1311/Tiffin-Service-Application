@@ -15,19 +15,16 @@ const orderSchema = new mongoose.Schema(
     },
     orderQuantity: { type: Number, required: true, default: 1 },
     orderStatus: { type: Boolean, default: false },
-    status: {
-      type: String,
-      enum: [
-        "Pending",
-        "Preparing",
-        "Out for Delivery",
-        "Delivered",
-        "Cancelled",
-      ],
-      default: "Pending",
-    },
+  status: {
+    type: String,
+    enum: ['Pending', 'Preparing', 'Out for Delivery', 'Delivered', 'Cancelled'],
+    default: 'Pending'
+  },
     deliveryOTP: { type: String, required: true },
+    paymentId:{type:String},
     isRated: { type: Boolean, default: false },
+    customerVisible: { type: Boolean, default: true },
+    chefVisible: { type: Boolean, default: true },
   },
   { timestamps: true }
 );

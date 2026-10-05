@@ -1,14 +1,10 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 
 const notificationSchema = new mongoose.Schema({
-  // The user receiving the notification (Can be Chef or Customer)
-  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-  
-  // Optional reference to the specific order
-  orderId: { type: mongoose.Schema.Types.ObjectId, ref: 'Order' },
-  
+  userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
   message: { type: String, required: true },
+  relateddOrderId:{type:String},
   isRead: { type: Boolean, default: false }
 }, { timestamps: true });
 
-module.exports = mongoose.model('Notification', notificationSchema);
+module.exports = mongoose.model("Notification", notificationSchema);
