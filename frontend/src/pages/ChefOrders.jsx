@@ -46,6 +46,8 @@ export default function ChefOrders() {
       alert("Failed to clear history.");
     }
   };
+  
+
 
   const handleStatusChangeClick = (orderId, newStatus) => {
     if (newStatus === "Delivered") {
@@ -129,6 +131,8 @@ export default function ChefOrders() {
         const isCancelled = order.status === 'Cancelled';
         const isDimmed = isCancelled || isAbandoned;
         const isHighlighted = highlightId === order._id;
+
+
 
         return (
           <div 

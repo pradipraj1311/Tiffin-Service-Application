@@ -32,7 +32,7 @@ export default function Subscriptions() {
       const orderData = orderRes.data;
 
       const options = {
-        key: import.meta.env.RAZORPAY_KEY || RAZORPAY_KEY,
+        key: import.meta.env.VITE_RAZORPAY_KEY,
         amount: orderData.amount,
         currency: orderData.currency,
         name: 'Tiffin Service Platform',

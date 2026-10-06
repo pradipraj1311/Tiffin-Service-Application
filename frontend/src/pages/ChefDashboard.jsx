@@ -21,7 +21,6 @@ export default function ChefDashboard() {
   const [filteredSuggestions, setFilteredSuggestions] = useState([]);
   const [editingId, setEditingId] = useState(null); 
 
-  // --- ACCESS GATE CHECK ---
   const isWorkspaceLocked = !user.isProfileComplete || user.verificationStatus !== 'Approved' || !user.isSubscribed;
 
   useEffect(() => {
@@ -47,6 +46,7 @@ export default function ChefDashboard() {
     }
   };
 
+
   const handleSubscribe = async () => {
     try {
       await API.post('/subscriptions/activate');
@@ -56,6 +56,7 @@ export default function ChefDashboard() {
       alert(err.response?.data?.message || 'Subscription failed');
     }
   };
+
 
   const handleSubmitMenu = async (e) => {
     e.preventDefault();
@@ -89,6 +90,7 @@ export default function ChefDashboard() {
     }
   };
 
+
   const handleEdit = (tiffin) => {
     if (isWorkspaceLocked) return alert("Action blocked: Workspace is locked.");
     setEditingId(tiffin._id);
@@ -104,6 +106,7 @@ export default function ChefDashboard() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+
   const handleDelete = async (id) => {
     if (isWorkspaceLocked) return alert("Action blocked: Workspace is locked.");
     if (!window.confirm("Are you sure you want to delete this menu?")) return;
@@ -115,10 +118,13 @@ export default function ChefDashboard() {
     }
   };
 
+
   const formatDisplayDate = (dateString) => {
     if (!dateString) return '';
     return new Date(dateString).toLocaleDateString('en-GB', { weekday: 'long', day: '2-digit', month: '2-digit', year: '2-digit' });
   };
+
+
 
   const handleItemInputChange = (e) => {
     const value = e.target.value;
@@ -159,6 +165,7 @@ export default function ChefDashboard() {
 
   if (loading) return <div>Loading...</div>;
 
+  
   return (
     <div className="container">
       

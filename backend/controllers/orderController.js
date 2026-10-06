@@ -6,8 +6,8 @@ const Razorpay = require("razorpay");
 const crypto = require("crypto");
 
 const razorpay = new Razorpay({
-  key_id: process.env.RAZORPAY_KEY || RAZORPAY_KEY,
-  key_secret: process.env.RAZORPAY_SECRET|| RAZORPAY_SECRET
+  key_id: process.env.VITE_RAZORPAY_KEY,
+  key_secret: process.env.RAZORPAY_SECRET
 });
 
 exports.initiateOrder = async (req, res) => {
@@ -87,9 +87,9 @@ exports.placeCODOrder = async (req, res) => {
     res.status(500).json({ message: "Failed to process COD order.", error: error.message });
   }
 };
+
 exports.getUserOrders = async (req, res) => {
   try {
-    // ONLY fetch orders where customerVisible is not explicitly false
     const orders = await Order.find({ CustomerId: req.user._id || req.user.id, customerVisible: { $ne: false } })
       .populate({ path: "post_MenuId", populate: { path: "CustomerId", select: "businessName name" }})
       .sort({ createdAt: -1 });

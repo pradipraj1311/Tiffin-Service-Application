@@ -3,8 +3,8 @@ const crypto = require('crypto');
 const User = require('../models/User');
 
 const razorpay = new Razorpay({
-key_id: process.env.RAZORPAY_KEY || RAZORPAY_KEY,
-  key_secret: process.env.RAZORPAY_SECRET || RAZORPAY_SECRET
+key_id: process.env.VITE_RAZORPAY_KEY || RAZORPAY_KEY,
+  key_secret: process.env.RAZORPAY_SECRET
 });
 
 exports.createOrder = async (req, res) => {
@@ -25,7 +25,6 @@ exports.verifyPayment = async (req, res) => {
   try {
     const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
     
-
     const expiresAt = new Date();
     expiresAt.setDate(expiresAt.getDate() + 30);
 

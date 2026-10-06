@@ -189,7 +189,7 @@ export default function CustomerDashboard() {
       const { razorpayOrder, amount } = data;
 
       const options = {
-        key: import.meta.env.RAZORPAY_KEY || RAZORPAY_KEY,
+        key: import.meta.env.VITE_RAZORPAY_KEY,
         amount: amount.toString(),
         currency: 'INR',
         name: selectedTiffin.CustomerId?.businessName || 'Tiffin Service',

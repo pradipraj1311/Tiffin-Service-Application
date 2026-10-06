@@ -14,6 +14,7 @@ exports.getPendingChefs = async (req, res) => {
     res.status(500).json({ message: 'Server error fetching chefs', error: error.message });
   }
 };
+
 const getDistanceInKm = (lat1, lon1, lat2, lon2) => {
   if (!lat1 || !lon1 || !lat2 || !lon2) return Infinity;
   const R = 6371;
@@ -24,6 +25,7 @@ const getDistanceInKm = (lat1, lon1, lat2, lon2) => {
     Math.sin(dLon / 2) * Math.sin(dLon / 2);
   return R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)));
 };
+
 
 exports.updateChefVerification = async (req, res) => {
   try {
